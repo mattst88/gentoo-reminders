@@ -1,0 +1,22 @@
+[build-system]
+requires = ["flit_core>=3.11"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "gentoo-reminders"
+version = "0.1.0"
+description = "Generate reminder emails for Gentoo package maintainers"
+authors = [{name = "Matt Turner", email = "mattst88@gentoo.org"}]
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+    "jinja2",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.scripts]
+gentoo-reminders = "gentoo_reminders.cli:main"

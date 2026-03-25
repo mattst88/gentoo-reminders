@@ -1,0 +1,9 @@
+[general]
+# Local checkout of the gentoo ebuild repository
+gentoo_repo = "/home/user/gentoo"
+
+# Where generated .eml files are written
+output_dir = "~/.local/share/gentoo-reminders/outbox"
+
+from_address = "noreply@gentoo.org"
+subject_prefix = "[Gentoo Reminder]"
