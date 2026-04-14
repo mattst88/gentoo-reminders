@@ -5,7 +5,7 @@ from email.message import EmailMessage
 from email.utils import formatdate, make_msgid, parseaddr
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .collectors.base import Section
 from .config import Config
@@ -13,6 +13,7 @@ from .maintainers import Maintainer
 
 env = Environment(
     loader=FileSystemLoader(Path(__file__).parent / "templates"),
+    autoescape=select_autoescape(("html.j2",)),
     trim_blocks=True,
     lstrip_blocks=True,
     keep_trailing_newline=True,
@@ -32,6 +33,9 @@ def render(config: Config, maintainer: Maintainer,
     context = {"maintainer": maintainer, "sections": sections}
     text = env.get_template("reminder.txt.j2").render(context)
     msg.set_content(text, cte=cte(text))
+    if config.multipart:
+        html = env.get_template("reminder.html.j2").render(context)
+        msg.add_alternative(html, subtype="html", cte=cte(html))
     return msg
 
 

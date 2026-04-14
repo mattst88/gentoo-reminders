@@ -7,3 +7,6 @@ output_dir = "~/.local/share/gentoo-reminders/outbox"
 
 from_address = "noreply@gentoo.org"
 subject_prefix = "[Gentoo Reminder]"
+
+# Whether to add an HTML alternative to the plain text
+multipart = true

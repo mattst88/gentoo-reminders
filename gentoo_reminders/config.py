@@ -12,6 +12,7 @@ class Config:
     output_dir: Path = Path("~/.local/share/gentoo-reminders/outbox")
     from_address: str = "noreply@gentoo.org"
     subject_prefix: str = "[Gentoo Reminder]"
+    multipart: bool = True
 
 
 # Each section's options, as Config fields with this prefix
