@@ -9,7 +9,7 @@ from .collectors.base import Collector, Section
 from .collectors.shortlog import ShortlogCollector
 from .config import Config, load_config
 from .email import render, write_email
-from .maintainers import Maintainer, load_maintainers
+from .maintainers import Maintainer, find_last_commits, load_maintainers
 from .util import run
 
 log = logging.getLogger(__name__)
@@ -109,7 +109,10 @@ async def async_main(args: argparse.Namespace) -> None:
 
     collectors = [COLLECTORS[name](config) for name in args.collectors]
     try:
-        await asyncio.gather(*(c.setup() for c in collectors))
+        await asyncio.gather(
+            asyncio.to_thread(find_last_commits, config.gentoo_repo, selected),
+            *(c.setup() for c in collectors),
+        )
     except Exception as e:
         sys.exit(f"Failed to fetch data: {e}")
 

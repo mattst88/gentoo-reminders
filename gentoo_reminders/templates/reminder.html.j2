@@ -10,6 +10,7 @@ pre{background:#f6f6f6;padding:10px 14px;border-radius:3px;overflow-x:auto;font-
 a{color:#0060a0}
 ul{margin:4px 0 0;padding-left:1.4em}
 li{margin-bottom:3px}
+.meta{color:#555;font-size:.9em}
 .footer{margin-top:2em;padding-top:8px;border-top:1px solid #eee;color:#888;font-size:.85em}
 </style>
 </head>
@@ -17,6 +18,16 @@ li{margin-bottom:3px}
 <p>Hi {{ maintainer.email }},</p>
 <p>Here is your monthly Gentoo package maintenance summary.
 You maintain <strong>{{ maintainer.packages | length }}</strong> package{{ "s" if maintainer.packages | length != 1 }}.</p>
+{% if maintainer.last_authored or maintainer.last_committed %}
+<p class="meta">
+{% if maintainer.last_authored %}
+Last commit authored: {{ maintainer.last_authored }}<br>
+{% endif %}
+{% if maintainer.last_committed %}
+Last commit committed: {{ maintainer.last_committed }}
+{% endif %}
+</p>
+{% endif %}
 {% for section in sections %}
 {% if section.text %}
 <h2>{{ section.title }}</h2>

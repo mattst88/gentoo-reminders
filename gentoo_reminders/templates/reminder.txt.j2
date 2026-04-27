@@ -3,6 +3,12 @@ Hi {{ maintainer.email }},
 
 Here is your monthly Gentoo package maintenance summary.
 You maintain {{ maintainer.packages | length }} package{{ "s" if maintainer.packages | length != 1 }}.
+{% if maintainer.last_authored %}
+Last commit authored: {{ maintainer.last_authored }}
+{% endif %}
+{% if maintainer.last_committed %}
+Last commit committed: {{ maintainer.last_committed }}
+{% endif %}
 {% for section in sections %}
 
 {% if section.text %}
