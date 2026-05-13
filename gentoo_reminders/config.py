@@ -13,10 +13,11 @@ class Config:
     from_address: str = "noreply@gentoo.org"
     subject_prefix: str = "[Gentoo Reminder]"
     multipart: bool = True
+    github_repo: str = "gentoo/gentoo"
 
 
 # Each section's options, as Config fields with this prefix
-SECTIONS = {"general": ""}
+SECTIONS = {"general": "", "github": "github_"}
 
 
 def load_config(path: str) -> Config:

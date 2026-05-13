@@ -3,6 +3,7 @@
 Writes a monthly reminder email for each Gentoo package maintainer,
 listing:
 
+- the open GitHub pull requests that touch their packages
 - the commits to their packages in the previous month
 
 Maintainers with nothing to report get no email. The emails are written
@@ -12,6 +13,7 @@ as `.eml` files and are not sent.
 
 - Python 3.11 or later
 - a checkout of gentoo.git
+- the [GitHub CLI](https://cli.github.com/), logged in
 
 ## Usage
 
@@ -25,13 +27,18 @@ The previous month is the one before the current month in UTC, so run it
 early on the first of each month.
 
 The checkout is updated with `git pull --ff-only` first, unless
-`--no-pull` is given.
+`--no-pull` is given. `--collectors` limits the run to some of
+`github_prs` and `shortlog`.
 
 To send what was written:
 
     for eml in ~/.local/share/gentoo-reminders/outbox/*.eml; do
         sendmail -t < "$eml" && rm "$eml"
     done
+
+## Limitations
+
+- Pull requests are matched on the first 100 files they change.
 
 ## Tests
 

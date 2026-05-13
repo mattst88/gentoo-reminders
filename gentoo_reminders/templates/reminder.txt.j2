@@ -19,6 +19,9 @@ Last commit committed: {{ maintainer.last_committed }}
 
 {% for item in section.items %}
   {{ item.ref }}{{ item.text }}
+{% if section.urls_in_text and item.url %}
+    {{ item.url }}
+{% endif %}
 {% endfor %}
 {% endif %}
 {% endfor %}

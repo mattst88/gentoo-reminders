@@ -19,6 +19,7 @@ class Section:
     title: str
     items: list[Item] = field(default_factory=list)
     text: str = ""  # preformatted, shown instead of items
+    urls_in_text: bool = False  # also print each item's URL in the text part
 
 
 class Collector:
@@ -34,3 +35,18 @@ class Collector:
     def finish(self) -> None:
         """Report on the run, once every maintainer has been processed."""
 
+
+class PackageCollector(Collector):
+    """A collector of items by package, set in `setup()`."""
+    title: str
+    urls_in_text = False
+    items: dict[str, list[Item]]
+
+    async def collect(self, maintainer: Maintainer) -> list[Section]:
+        # An item can be under several of the maintainer's packages.
+        items = dict.fromkeys(
+            item
+            for package in maintainer.packages
+            for item in self.items.get(package, ())
+        )
+        return [Section(self.title, list(items), urls_in_text=self.urls_in_text)]

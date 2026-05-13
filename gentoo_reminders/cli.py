@@ -6,6 +6,7 @@ import logging
 import sys
 
 from .collectors.base import Collector, Section
+from .collectors.github_prs import GitHubPRsCollector
 from .collectors.shortlog import ShortlogCollector
 from .config import Config, load_config
 from .email import render, write_email
@@ -16,6 +17,7 @@ log = logging.getLogger(__name__)
 
 # In the order their sections appear in the email
 COLLECTORS = {
+    "github_prs": GitHubPRsCollector,
     "shortlog": ShortlogCollector,
 }
 
