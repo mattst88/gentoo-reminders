@@ -6,6 +6,7 @@ import logging
 import sys
 
 from .collectors.base import Collector, Section
+from .collectors.bugzilla import BugsCollector, NewBugsCollector
 from .collectors.github_prs import GitHubPRsCollector
 from .collectors.shortlog import ShortlogCollector
 from .config import Config, load_config
@@ -19,6 +20,8 @@ log = logging.getLogger(__name__)
 COLLECTORS = {
     "github_prs": GitHubPRsCollector,
     "shortlog": ShortlogCollector,
+    "new_bugs": NewBugsCollector,
+    "bugs": BugsCollector,
 }
 
 

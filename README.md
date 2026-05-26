@@ -5,6 +5,8 @@ listing:
 
 - the open GitHub pull requests that touch their packages
 - the commits to their packages in the previous month
+- the bugs assigned to them that were filed or closed in the previous
+  month, and those still open, from bugs.gentoo.org
 
 Maintainers with nothing to report get no email. The emails are written
 as `.eml` files and are not sent.
@@ -14,6 +16,8 @@ as `.eml` files and are not sent.
 - Python 3.11 or later
 - a checkout of gentoo.git
 - the [GitHub CLI](https://cli.github.com/), logged in
+- a [bugs.gentoo.org API key](https://bugs.gentoo.org/userprefs.cgi?tab=apikey),
+  set as `api_key` in the `[bugzilla]` section of the configuration
 
 ## Usage
 
@@ -28,7 +32,7 @@ early on the first of each month.
 
 The checkout is updated with `git pull --ff-only` first, unless
 `--no-pull` is given. `--collectors` limits the run to some of
-`github_prs` and `shortlog`.
+`github_prs`, `shortlog`, `new_bugs` and `bugs`.
 
 To send what was written:
 

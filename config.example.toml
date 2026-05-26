@@ -14,3 +14,8 @@ multipart = true
 [github]
 # Repository whose open pull requests are listed, read with the gh CLI
 repo = "gentoo/gentoo"
+
+[bugzilla]
+# Required by the bugs and new_bugs collectors. Without one, Bugzilla hides
+# the domains of email addresses.
+api_key = ""

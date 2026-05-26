@@ -2,7 +2,17 @@
 
 import asyncio
 import contextlib
+import logging
+import re
+import time
 from datetime import UTC, date, datetime, timedelta
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+log = logging.getLogger(__name__)
+
+USER_AGENT = "gentoo-reminders"
+
 
 async def run(*args: str, timeout: int = 300) -> str:
     """Run a command and return its stdout, raising if it fails or times out."""
@@ -31,3 +41,26 @@ def previous_month(today: date | None = None) -> tuple[date, date]:
     last = today.replace(day=1) - timedelta(days=1)
     return last.replace(day=1), last
 
+
+def redact(url: str) -> str:
+    """Hide API keys in a URL, so that it can be logged."""
+    return re.sub(r"(api_key=)[^&]*", r"\1REDACTED", url, flags=re.IGNORECASE)
+
+
+def _get(url: str) -> bytes:
+    request = Request(url, headers={"User-Agent": USER_AGENT})
+    with urlopen(request, timeout=120) as response:
+        return response.read()
+
+
+def fetch(url: str) -> bytes:
+    """GET a URL, retrying server and connection errors."""
+    for delay in (1, 4):
+        try:
+            return _get(url)
+        except (URLError, TimeoutError) as e:
+            if isinstance(e, HTTPError) and e.code < 500:
+                raise
+            log.warning("%s: %s, retrying in %ds", redact(url), e, delay)
+            time.sleep(delay)
+    return _get(url)

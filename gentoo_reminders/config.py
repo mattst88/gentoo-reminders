@@ -14,10 +14,11 @@ class Config:
     subject_prefix: str = "[Gentoo Reminder]"
     multipart: bool = True
     github_repo: str = "gentoo/gentoo"
+    bugzilla_api_key: str | None = None
 
 
 # Each section's options, as Config fields with this prefix
-SECTIONS = {"general": "", "github": "github_"}
+SECTIONS = {"general": "", "github": "github_", "bugzilla": "bugzilla_"}
 
 
 def load_config(path: str) -> Config:
