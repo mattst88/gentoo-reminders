@@ -3,6 +3,7 @@
 Writes a monthly reminder email for each Gentoo package maintainer,
 listing:
 
+- their packages with a newer upstream version, from packages.gentoo.org
 - the open GitHub pull requests that touch their packages
 - the commits to their packages in the previous month
 - the bugs assigned to them that were filed or closed in the previous
@@ -32,7 +33,7 @@ early on the first of each month.
 
 The checkout is updated with `git pull --ff-only` first, unless
 `--no-pull` is given. `--collectors` limits the run to some of
-`github_prs`, `shortlog`, `new_bugs` and `bugs`.
+`outdated`, `github_prs`, `shortlog`, `new_bugs` and `bugs`.
 
 To send what was written:
 
