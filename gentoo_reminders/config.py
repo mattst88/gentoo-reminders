@@ -10,6 +10,7 @@ from pathlib import Path
 class Config:
     gentoo_repo: Path
     output_dir: Path = Path("~/.local/share/gentoo-reminders/outbox")
+    cache_dir: Path = Path("~/.cache/gentoo-reminders")
     from_address: str = "noreply@gentoo.org"
     subject_prefix: str = "[Gentoo Reminder]"
     multipart: bool = True
@@ -42,6 +43,6 @@ def load_config(path: str) -> Config:
     except TypeError as e:
         sys.exit(f"{path}: {e}")
 
-    for key in ("gentoo_repo", "output_dir"):
+    for key in ("gentoo_repo", "output_dir", "cache_dir"):
         setattr(config, key, Path(getattr(config, key)).expanduser())
     return config

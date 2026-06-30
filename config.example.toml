@@ -5,6 +5,9 @@ gentoo_repo = "/home/user/gentoo"
 # Where generated .eml files are written
 output_dir = "~/.local/share/gentoo-reminders/outbox"
 
+# Where the history of Gentoo's CI reports is kept between runs
+cache_dir = "~/.cache/gentoo-reminders"
+
 from_address = "noreply@gentoo.org"
 subject_prefix = "[Gentoo Reminder]"
 
