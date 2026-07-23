@@ -9,6 +9,7 @@ from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
 from .collectors.github_prs import GitHubPRsCollector
 from .collectors.outdated import OutdatedCollector
+from .collectors.redundant import RedundantVersionsCollector
 from .collectors.shortlog import ShortlogCollector
 from .collectors.stable_requests import StableRequestsCollector
 from .config import Config, load_config
@@ -23,6 +24,7 @@ COLLECTORS = {
     "outdated": OutdatedCollector,
     "stable_requests": StableRequestsCollector,
     "github_prs": GitHubPRsCollector,
+    "redundant": RedundantVersionsCollector,
     "shortlog": ShortlogCollector,
     "new_bugs": NewBugsCollector,
     "bugs": BugsCollector,
