@@ -9,6 +9,8 @@ listing:
 - the open GitHub pull requests that touch their packages
 - their redundant package versions, from Gentoo's CI
 - the commits to their packages in the previous month
+- the pkgcheck errors and warnings new in the previous month, from
+  Gentoo's CI
 - the bugs assigned to them that were filed or closed in the previous
   month, and those still open, from bugs.gentoo.org
 
@@ -37,11 +39,14 @@ early on the first of each month.
 The checkout is updated with `git pull --ff-only` first, unless
 `--no-pull` is given. `--collectors` limits the run to some of
 `outdated`, `stable_requests`, `github_prs`, `redundant`, `shortlog`,
-`new_bugs` and `bugs`.
+`qa`, `new_bugs` and `bugs`.
 
 The pkgcheck reports of Gentoo's CI come from
 [gentoo-ci.git](https://anongit.gentoo.org/git/report/gentoo-ci.git),
-kept in `cache_dir`.
+kept in `cache_dir`. New QA warnings are those in the last report of the
+previous month and not in the last report before it, ignoring versions,
+line numbers and bracketed lists, and checks with no results in the
+earlier report.
 
 To send what was written:
 

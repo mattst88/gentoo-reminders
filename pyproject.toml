@@ -13,6 +13,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "jinja2",
+    "pkgcheck",
 ]
 
 [project.optional-dependencies]

@@ -9,6 +9,7 @@ from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
 from .collectors.github_prs import GitHubPRsCollector
 from .collectors.outdated import OutdatedCollector
+from .collectors.qa import QACollector
 from .collectors.redundant import RedundantVersionsCollector
 from .collectors.shortlog import ShortlogCollector
 from .collectors.stable_requests import StableRequestsCollector
@@ -26,6 +27,7 @@ COLLECTORS = {
     "github_prs": GitHubPRsCollector,
     "redundant": RedundantVersionsCollector,
     "shortlog": ShortlogCollector,
+    "qa": QACollector,
     "new_bugs": NewBugsCollector,
     "bugs": BugsCollector,
 }
@@ -142,5 +144,7 @@ def main(argv: list[str] | None = None) -> None:
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s: %(message)s",
+        # Importing pkgcheck adds a handler, which would make this do nothing.
+        force=True,
     )
     asyncio.run(async_main(args))
