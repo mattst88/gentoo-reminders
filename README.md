@@ -8,7 +8,8 @@ listing:
   CI
 - the open GitHub pull requests that touch their packages
 - their redundant package versions, from Gentoo's CI
-- the commits to their packages in the previous month
+- the commits to their packages in the previous month, split for a
+  project into those by its members and by others
 - the pkgcheck errors and warnings new in the previous month, from
   Gentoo's CI
 - the bugs assigned to them that were filed or closed in the previous
