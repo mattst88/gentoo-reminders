@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import gzip
 import logging
 import re
 import time
@@ -48,9 +49,12 @@ def redact(url: str) -> str:
 
 
 def _get(url: str) -> bytes:
-    request = Request(url, headers={"User-Agent": USER_AGENT})
+    request = Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "gzip"})
     with urlopen(request, timeout=120) as response:
-        return response.read()
+        data = response.read()
+        if response.headers.get("Content-Encoding") == "gzip":
+            data = gzip.decompress(data)
+        return data
 
 
 def fetch(url: str) -> bytes:

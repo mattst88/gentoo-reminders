@@ -1,8 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import gzip
+import io
 from datetime import date
 
-from gentoo_reminders.util import previous_month, redact
+from gentoo_reminders import util
+from gentoo_reminders.util import fetch, previous_month, redact
 
 
 def test_previous_month():
@@ -15,3 +18,24 @@ def test_redact():
     assert (redact("https://example.org/rest/bug?id=1&Bugzilla_api_key=secret&limit=5")
             == "https://example.org/rest/bug?id=1&Bugzilla_api_key=REDACTED&limit=5")
     assert redact("https://example.org/rest/bug?id=1") == "https://example.org/rest/bug?id=1"
+
+
+class Response(io.BytesIO):
+    def __init__(self, data, headers):
+        super().__init__(data)
+        self.headers = headers
+
+
+def test_fetch_decompresses(monkeypatch):
+    requests = []
+
+    def urlopen(request, timeout):
+        requests.append(request)
+        return Response(gzip.compress(b"data"), {"Content-Encoding": "gzip"})
+
+    monkeypatch.setattr(util, "urlopen", urlopen)
+    assert fetch("https://example.org/") == b"data"
+    assert requests[0].get_header("Accept-encoding") == "gzip"
+
+    monkeypatch.setattr(util, "urlopen", lambda request, timeout: Response(b"data", {}))
+    assert fetch("https://example.org/") == b"data"

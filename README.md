@@ -43,6 +43,8 @@ The checkout is updated with `git pull --ff-only` first, unless
 `qa`, `new_bugs` and `bugs`.
 
 The pkgcheck reports of Gentoo's CI come from
+[qa-reports.gentoo.org](https://qa-reports.gentoo.org/), found by date
+in the commits of
 [gentoo-ci.git](https://anongit.gentoo.org/git/report/gentoo-ci.git),
 kept in `cache_dir`. New QA warnings are those in the last report of the
 previous month and not in the last report before it, ignoring versions,

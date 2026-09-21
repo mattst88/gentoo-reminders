@@ -3,19 +3,21 @@
 """pkgcheck's reports on the gentoo repository from Gentoo's CI."""
 
 import asyncio
+import json
 import logging
-import xml.etree.ElementTree as ET
 from collections import defaultdict
 from collections.abc import Callable, Iterable
 from datetime import datetime
 from pathlib import Path
 
 from .collectors.base import Item
-from .util import run
+from .util import fetch, run
 
 log = logging.getLogger(__name__)
 
+# One commit per report, giving the scan ids and their times
 URL = "https://anongit.gentoo.org/git/report/gentoo-ci.git"
+REPORTS_URL = "https://qa-reports.gentoo.org/output/gentoo-ci"
 
 # Cached for the run
 _updated = False
@@ -31,21 +33,16 @@ async def _update(repo: Path) -> None:
         await run("git", "-C", str(repo), "fetch", "--quiet", timeout=900)
     else:
         repo.parent.mkdir(parents=True, exist_ok=True)
-        # Without the reports, which git fetches when they are read
-        await run("git", "clone", "--quiet", "--mirror", "--filter=blob:none",
+        # Just the commits: the reports come from REPORTS_URL
+        await run("git", "clone", "--quiet", "--mirror", "--filter=tree:0",
                   URL, str(repo), timeout=900)
     _updated = True
 
 
-def parse(report: str) -> list[dict[str, str]]:
-    """Return each result's fields: class, msg, and category, package and
-    version where it has them."""
-    return [{e.tag: e.text or "" for e in result} for result in ET.fromstring(report)]
-
-
 async def report(cache_dir: Path, before: datetime | None = None) -> list[dict[str, str]]:
     """Return the results of the latest report, or of the last one before
-    `before`."""
+    `before`. Each has class, msg, and category, package and version where
+    it has them."""
     repo = cache_dir / "gentoo-ci.git"
     async with _lock:
         await _update(repo)
@@ -58,8 +55,8 @@ async def report(cache_dir: Path, before: datetime | None = None) -> list[dict[s
             raise RuntimeError(f"no CI report from before {before}")
         if commit not in _reports:
             log.info("Reading CI report %s", commit)
-            _reports[commit] = parse(await run(
-                "git", "-C", str(repo), "show", f"{commit}:output.xml", timeout=900))
+            _reports[commit] = json.loads(await asyncio.to_thread(
+                fetch, f"{REPORTS_URL}/{commit}/output.json"))
         return _reports[commit]
 
 

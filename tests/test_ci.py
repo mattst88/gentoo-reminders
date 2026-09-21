@@ -11,9 +11,16 @@ def test_report_fetches_and_reads_once(monkeypatch, tmp_path):
 
     async def run(*args, timeout=300):
         commands.append(args)
-        return "abc123\n" if "log" in args else "<checks/>"
+        return "abc123\n"
+
+    urls = []
+
+    def fetch(url):
+        urls.append(url)
+        return b"[]"
 
     monkeypatch.setattr(ci, "run", run)
+    monkeypatch.setattr(ci, "fetch", fetch)
     monkeypatch.setattr(ci, "_updated", False)
     monkeypatch.setattr(ci, "_reports", {})
     monkeypatch.setattr(ci, "_lock", asyncio.Lock())
@@ -28,8 +35,8 @@ def test_report_fetches_and_reads_once(monkeypatch, tmp_path):
     assert asyncio.run(reports()) == [[], []]
     assert [c[1:3] for c in commands] == [
         ("clone", "--quiet"), ("-C", str(tmp_path / "gentoo-ci.git")),
-        ("-C", str(tmp_path / "gentoo-ci.git")), ("-C", str(tmp_path / "gentoo-ci.git")),
+        ("-C", str(tmp_path / "gentoo-ci.git")),
     ]
-    assert [c[3] for c in commands[1:]] == ["log", "show", "log"]
-    assert "--before=2026-09-30 23:59:59 +0000" in commands[3]
-    assert commands[2][-1] == "abc123:output.xml"
+    assert [c[3] for c in commands[1:]] == ["log", "log"]
+    assert "--before=2026-09-30 23:59:59 +0000" in commands[2]
+    assert urls == ["https://qa-reports.gentoo.org/output/gentoo-ci/abc123/output.json"]
