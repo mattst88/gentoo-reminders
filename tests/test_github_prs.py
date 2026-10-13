@@ -1,6 +1,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gentoo_reminders.collectors.github_prs import group_by_package
+import asyncio
+from pathlib import Path
+
+import pytest
+
+from gentoo_reminders.collectors import github_prs
+from gentoo_reminders.collectors.github_prs import GitHubPRsCollector, group_by_package
+from gentoo_reminders.config import Config
 
 
 def test_group_by_package():
@@ -22,3 +29,34 @@ def test_group_by_package():
     assert [item.ref for item in grouped["x11-libs/libdrm"]] == ["PR #2"]
     assert [item.ref for item in grouped["media-libs/mesa"]] == ["PR #1", "PR #2"]
     assert grouped["media-libs/mesa"][0].url == "https://example.org/1"
+
+
+def setup(monkeypatch, errors):
+    calls = []
+
+    async def run(*args, timeout):
+        calls.append(args)
+        if errors:
+            raise RuntimeError(errors.pop(0))
+        return "[]"
+
+    async def sleep(delay):
+        pass
+
+    monkeypatch.setattr(github_prs, "run", run)
+    monkeypatch.setattr(github_prs.asyncio, "sleep", sleep)
+    collector = GitHubPRsCollector(Config(gentoo_repo=Path("/nonexistent")))
+    asyncio.run(collector.setup())
+    return calls
+
+
+def test_retries_server_errors(monkeypatch):
+    error = "gh exited with status 1: HTTP 502: 502 Bad Gateway (https://api.github.com/graphql)"
+    assert len(setup(monkeypatch, [error, error])) == 3
+    with pytest.raises(RuntimeError, match="502"):
+        setup(monkeypatch, [error] * 3)
+
+
+def test_does_not_retry_other_errors(monkeypatch):
+    with pytest.raises(RuntimeError, match="HTTP 401"):
+        setup(monkeypatch, ["gh exited with status 1: HTTP 401: Bad credentials"])
