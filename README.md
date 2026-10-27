@@ -34,8 +34,10 @@ as `.eml` files and are not sent.
 
 `--dry-run` prints the email instead of writing it to `output_dir`.
 Without `--maintainer`, every maintainer in the repository is processed.
-The previous month is the one before the current month in UTC, so run it
-early on the first of each month.
+New QA warnings, commits, and bugs filed and closed are those of the
+previous month, the one before the current month in UTC, so run it early
+on the first of each month. `--month 2026-10` reports on October 2026
+instead, up to now if it is the current month.
 
 The checkout is updated with `git pull --ff-only` first, unless
 `--no-pull` is given. `--collectors` limits the run to some of

@@ -7,7 +7,6 @@ from pkgcheck.objects import KEYWORDS
 
 from .base import Item, PackageCollector
 from .. import ci
-from ..util import previous_month
 
 # Line numbers, [ lists ] and (N total), which change without the warning
 # being new
@@ -38,11 +37,11 @@ def new_warnings(before: list[dict[str, str]],
 
 
 class QACollector(PackageCollector):
-    """pkgcheck errors and warnings new in the previous calendar month."""
+    """pkgcheck errors and warnings new in the month reported on."""
 
     async def setup(self) -> None:
-        first, last = previous_month()
-        self.title = f"New QA Warnings in {first:%B %Y}"
+        first, last = self.month
+        self.title = f"New QA Warnings in {self.month_name}"
         # git log --before includes its own time.
         start = datetime.combine(first, time(), UTC) - timedelta(seconds=1)
         end = datetime.combine(last, time(23, 59, 59), UTC)

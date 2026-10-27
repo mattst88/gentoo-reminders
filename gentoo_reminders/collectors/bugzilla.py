@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 
 from .base import Collector, Item, Section
 from ..maintainers import Maintainer
-from ..util import fetch, previous_month
+from ..util import fetch
 
 URL = "https://bugs.gentoo.org"
 PAGE_SIZE = 10000  # the most the server returns per request
@@ -70,12 +70,11 @@ class BugsCollector(Collector):
 
 
 class NewBugsCollector(Collector):
-    """Bugs filed and closed in the previous calendar month."""
+    """Bugs filed and closed in the month reported on."""
 
     async def setup(self) -> None:
         # Bugzilla's time zone is UTC. Both ends of the range are included.
-        first, last = previous_month()
-        self.month = f"{first:%B %Y}"
+        first, last = self.month
         dates = {"chfieldfrom": first.isoformat(), "chfieldto": last.isoformat()}
         api_key = self.config.bugzilla_api_key
         new, closed = await asyncio.gather(
@@ -90,6 +89,6 @@ class NewBugsCollector(Collector):
         new = [item(bug) for bug in self.new.get(maintainer.email, ())]
         closed = [item(bug) for bug in self.closed.get(maintainer.email, ())]
         return [
-            Section(f"Bugs Filed in {self.month}", new),
-            Section(f"Bugs Closed in {self.month}", closed),
+            Section(f"Bugs Filed in {self.month_name}", new),
+            Section(f"Bugs Closed in {self.month_name}", closed),
         ]

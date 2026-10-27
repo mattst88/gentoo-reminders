@@ -36,11 +36,16 @@ async def run(*args: str, timeout: int = 300) -> str:
     return stdout.decode()
 
 
+def month_days(day: date) -> tuple[date, date]:
+    """Return the first and last days of `day`'s month."""
+    first = day.replace(day=1)
+    return first, (first + timedelta(days=31)).replace(day=1) - timedelta(days=1)
+
+
 def previous_month(today: date | None = None) -> tuple[date, date]:
     """Return the first and last days of the month before `today`'s, in UTC."""
     today = today or datetime.now(UTC).date()
-    last = today.replace(day=1) - timedelta(days=1)
-    return last.replace(day=1), last
+    return month_days(today.replace(day=1) - timedelta(days=1))
 
 
 def redact(url: str) -> str:

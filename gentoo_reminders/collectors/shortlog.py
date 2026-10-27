@@ -6,7 +6,7 @@ from collections import defaultdict
 
 from .base import Collector, Section
 from ..maintainers import Maintainer
-from ..util import fetch, previous_month, run
+from ..util import fetch, run
 
 
 PROJECTS_URL = "https://api.gentoo.org/metastructure/projects.xml"
@@ -54,14 +54,13 @@ def shortlog(commits: list[tuple[str, str]]) -> str:
 
 
 class ShortlogCollector(Collector):
-    """Commits to the maintainer's packages in the previous calendar month.
+    """Commits to the maintainer's packages in the month reported on.
 
     For a project, those by its members and by others are listed apart.
     """
 
     async def setup(self) -> None:
-        first, last = previous_month()
-        self.month = f"{first:%B %Y}"
+        first, last = self.month
         # By commit date, not author date
         self.range = (f"--since={first} 00:00:00 +0000",
                       f"--until={last} 23:59:59 +0000")
@@ -78,13 +77,13 @@ class ShortlogCollector(Collector):
 
         members = self.projects.get(maintainer.email)
         if members is None:
-            return [Section(f"Changes in {self.month}",
+            return [Section(f"Changes in {self.month_name}",
                             text=shortlog([(name, subject) for name, _, subject in commits]))]
         ours = [(name, subject) for name, email, subject in commits
                 if email.lower() in members]
         others = [(name, subject) for name, email, subject in commits
                   if email.lower() not in members]
         return [
-            Section(f"Changes by Project Members in {self.month}", text=shortlog(ours)),
-            Section(f"Changes by Others in {self.month}", text=shortlog(others)),
+            Section(f"Changes by Project Members in {self.month_name}", text=shortlog(ours)),
+            Section(f"Changes by Others in {self.month_name}", text=shortlog(others)),
         ]

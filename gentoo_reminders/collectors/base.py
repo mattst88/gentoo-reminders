@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 from dataclasses import dataclass, field
+from datetime import date
 
 from ..config import Config
 from ..maintainers import Maintainer
+from ..util import previous_month
 
 
 @dataclass(frozen=True)
@@ -23,8 +25,12 @@ class Section:
 
 
 class Collector:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, month: tuple[date, date] | None = None):
         self.config = config
+        # First and last days of the month reported on, by default the
+        # previous one
+        self.month = month or previous_month()
+        self.month_name = f"{self.month[0]:%B %Y}"
 
     async def setup(self) -> None:
         """Fetch data shared by all maintainers."""

@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import logging
 import sys
+from datetime import date, datetime
 
 from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
@@ -16,7 +17,7 @@ from .collectors.stable_requests import StableRequestsCollector
 from .config import Config, load_config
 from .email import render, write_email
 from .maintainers import Maintainer, find_last_commits, load_maintainers
-from .util import run
+from .util import month_days, run
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,13 @@ def positive_int(value: str) -> int:
     return n
 
 
+def month(value: str) -> tuple[date, date]:
+    try:
+        return month_days(datetime.strptime(value, "%Y-%m").date())
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not a month like 2026-10: {value}") from None
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="gentoo-reminders",
@@ -61,6 +69,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="print emails instead of writing them")
     parser.add_argument("--collectors", type=collector_names, default=list(COLLECTORS),
                         help="comma-separated collectors to run (default: all)")
+    parser.add_argument("--month", type=month,
+                        help="report on this month, as YYYY-MM (default: the previous one)")
     parser.add_argument("--no-pull", action="store_true",
                         help="do not update the gentoo repository first")
     parser.add_argument("-j", "--jobs", type=positive_int, default=8,
@@ -120,7 +130,7 @@ async def async_main(args: argparse.Namespace) -> None:
     else:
         selected = list(maintainers.values())
 
-    collectors = [COLLECTORS[name](config) for name in args.collectors]
+    collectors = [COLLECTORS[name](config, args.month) for name in args.collectors]
     try:
         await asyncio.gather(
             asyncio.to_thread(find_last_commits, config.gentoo_repo, selected),

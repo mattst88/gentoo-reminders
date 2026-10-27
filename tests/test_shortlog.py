@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import asyncio
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 from gentoo_reminders.collectors import shortlog
@@ -26,7 +26,7 @@ LOG = (
 )
 
 
-def collect(monkeypatch, maintainer):
+def collect(monkeypatch, maintainer, month=None):
     commands = []
 
     async def run(*args):
@@ -35,7 +35,7 @@ def collect(monkeypatch, maintainer):
 
     monkeypatch.setattr(shortlog, "run", run)
     monkeypatch.setattr(shortlog, "fetch", lambda url: PROJECTS)
-    collector = ShortlogCollector(Config(gentoo_repo=Path("/nonexistent")))
+    collector = ShortlogCollector(Config(gentoo_repo=Path("/nonexistent")), month)
     asyncio.run(collector.setup())
     return commands, asyncio.run(collector.collect(maintainer))
 
@@ -72,6 +72,16 @@ def test_shortlog_split_by_project_members(monkeypatch):
     )
     assert others.title == f"Changes by Others in {month}"
     assert others.text == "Somebody (1):\n      app-misc/foo: baz"
+
+
+def test_shortlog_for_given_month(monkeypatch):
+    maintainer = Maintainer("larry@gentoo.org", packages=["app-misc/foo"])
+    month = (date(2026, 2, 1), date(2026, 2, 28))
+    commands, [section] = collect(monkeypatch, maintainer, month)
+
+    assert "--since=2026-02-01 00:00:00 +0000" in commands[0]
+    assert "--until=2026-02-28 23:59:59 +0000" in commands[0]
+    assert section.title == "Changes in February 2026"
 
 
 def test_parse_projects():
