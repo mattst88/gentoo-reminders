@@ -15,7 +15,7 @@ from .collectors.redundant import RedundantVersionsCollector
 from .collectors.shortlog import ShortlogCollector
 from .collectors.stable_requests import StableRequestsCollector
 from .config import Config, load_config
-from .email import render, write_email
+from .email import render, send_outbox, write_email
 from .maintainers import Maintainer, find_last_commits, load_maintainers
 from .util import month_days, run
 
@@ -66,7 +66,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--maintainer",
                         help="only process the maintainer with this email address")
     parser.add_argument("--dry-run", action="store_true",
-                        help="print emails instead of writing them")
+                        help="print emails instead of writing them, or with "
+                             "--send-outbox, list those it would send")
+    parser.add_argument("--send-outbox", action="store_true",
+                        help="send the emails in output_dir instead of writing new ones")
     parser.add_argument("--collectors", type=collector_names, default=list(COLLECTORS),
                         help="comma-separated collectors to run (default: all)")
     parser.add_argument("--month", type=month,
@@ -157,4 +160,13 @@ def main(argv: list[str] | None = None) -> None:
         # Importing pkgcheck adds a handler, which would make this do nothing.
         force=True,
     )
+    if args.send_outbox:
+        config = load_config(args.config)
+        try:
+            failed = send_outbox(config.output_dir, config.sendmail, args.dry_run)
+        except OSError as e:
+            sys.exit(f"Failed to send: {e}")
+        if failed:
+            sys.exit(f"{failed} emails not sent, left in {config.output_dir}")
+        return
     asyncio.run(async_main(args))

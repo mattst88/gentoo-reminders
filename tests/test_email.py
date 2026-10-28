@@ -5,7 +5,7 @@ from pathlib import Path
 
 from gentoo_reminders.collectors.base import Item, Section
 from gentoo_reminders.config import Config
-from gentoo_reminders.email import render
+from gentoo_reminders.email import render, send_outbox
 from gentoo_reminders.maintainers import Maintainer
 
 CONFIG = Config(gentoo_repo=Path("/nonexistent"))
@@ -70,3 +70,36 @@ def test_long_line_encoded():
 
     assert msg["Content-Transfer-Encoding"] == "quoted-printable"
     assert max(map(len, msg.as_bytes().splitlines())) <= 998
+
+
+def outbox(tmp_path):
+    for name in ("fails", "works"):
+        maintainer = replace(MAINTAINER, email=f"{name}@gentoo.org")
+        msg = render(replace(CONFIG, multipart=False), maintainer, SECTIONS)
+        (tmp_path / f"{name}.eml").write_bytes(msg.as_bytes())
+
+
+def test_send_outbox(tmp_path):
+    outbox(tmp_path)
+    sendmail = tmp_path / "sendmail"
+    log = tmp_path / "log"
+    # Fails for one recipient, and records the arguments and message otherwise
+    sendmail.write_text(f"""#!/bin/sh
+msg=$(cat)
+case "$msg" in *"To: fails@"*) echo nope >&2; exit 75;; esac
+echo "$@" >> {log}
+echo "$msg" >> {log}
+""")
+    sendmail.chmod(0o755)
+
+    assert send_outbox(tmp_path, str(sendmail)) == 1
+    assert [p.name for p in tmp_path.glob("*.eml")] == ["fails.eml"]
+    assert [p.name for p in (tmp_path / "sent").iterdir()] == ["works.eml"]
+    assert log.read_text().startswith("-t -oi\n")
+    assert "To: works@gentoo.org" in log.read_text()
+
+
+def test_send_outbox_dry_run(tmp_path):
+    outbox(tmp_path)
+    assert send_outbox(tmp_path, "/nonexistent", dry_run=True) == 0
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["fails.eml", "works.eml"]

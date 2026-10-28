@@ -14,6 +14,9 @@ subject_prefix = "[Gentoo Reminder]"
 # Whether to add an HTML alternative to the plain text
 multipart = true
 
+# Run with -t -oi by --send-outbox
+sendmail = "/usr/sbin/sendmail"
+
 [github]
 # Repository whose open pull requests are listed, read with the gh CLI
 repo = "gentoo/gentoo"

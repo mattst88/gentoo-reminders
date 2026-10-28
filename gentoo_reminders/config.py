@@ -14,6 +14,7 @@ class Config:
     from_address: str = "noreply@gentoo.org"
     subject_prefix: str = "[Gentoo Reminder]"
     multipart: bool = True
+    sendmail: str = "/usr/sbin/sendmail"
     github_repo: str = "gentoo/gentoo"
     bugzilla_api_key: str | None = None
 

@@ -16,7 +16,7 @@ listing:
   month, and those still open, from bugs.gentoo.org
 
 Maintainers with nothing to report get no email. The emails are written
-as `.eml` files and are not sent.
+as `.eml` files, and sent in a separate step.
 
 ## Requirements
 
@@ -53,11 +53,13 @@ previous month and not in the last report before it, ignoring versions,
 line numbers and bracketed lists, and checks with no results in the
 earlier report.
 
-To send what was written:
+To send what was written, with the `sendmail` of the configuration:
 
-    for eml in ~/.local/share/gentoo-reminders/outbox/*.eml; do
-        sendmail -t < "$eml" && rm "$eml"
-    done
+    gentoo-reminders --config config.toml --send-outbox
+
+Each email sent is moved to `sent` in `output_dir`. Those that fail stay
+behind, to be sent by the next `--send-outbox`. With `--dry-run`, it
+lists what it would send.
 
 ## Limitations
 
