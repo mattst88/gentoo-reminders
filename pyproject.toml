@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "gentoo-reminders"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Generate reminder emails for Gentoo package maintainers"
 authors = [{name = "Matt Turner", email = "mattst88@gentoo.org"}]
 readme = "README.md"

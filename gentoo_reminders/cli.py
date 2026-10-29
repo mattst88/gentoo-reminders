@@ -6,6 +6,7 @@ import logging
 import sys
 from datetime import date, datetime
 
+from . import __version__
 from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
 from .collectors.github_prs import GitHubPRsCollector
@@ -80,6 +81,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
                         help="maintainers to process concurrently (default: %(default)s)")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="enable debug logging")
+    parser.add_argument("--version", action="version",
+                        version=f"%(prog)s {__version__}")
     return parser.parse_args(argv)
 
 
