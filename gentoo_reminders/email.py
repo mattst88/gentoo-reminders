@@ -29,8 +29,11 @@ def render(config: Config, maintainer: Maintainer,
            sections: list[Section]) -> EmailMessage:
     msg = EmailMessage()
     msg["To"] = maintainer.email
+    if config.cc:
+        msg["Cc"] = config.cc
     msg["From"] = config.from_address
-    msg["Subject"] = f"{config.subject_prefix} Your package maintenance summary"
+    msg["Subject"] = (f"{config.subject_prefix} Package maintenance summary "
+                      f"for {maintainer.email}")
     msg["Date"] = formatdate(usegmt=True)
     domain = parseaddr(config.from_address)[1].rpartition("@")[2]
     msg["Message-ID"] = make_msgid(domain=domain or None)

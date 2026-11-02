@@ -9,6 +9,10 @@ output_dir = "~/.local/share/gentoo-reminders/outbox"
 cache_dir = "~/.cache/gentoo-reminders"
 
 from_address = "noreply@gentoo.org"
+
+# Copy every email to this address, for example a mailing list
+#cc = "reminders@example.org"
+
 subject_prefix = "[Gentoo Reminder]"
 
 # Whether to add an HTML alternative to the plain text

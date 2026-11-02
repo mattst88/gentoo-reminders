@@ -61,6 +61,10 @@ Each email sent is moved to `sent` in `output_dir`. Those that fail stay
 behind, to be sent by the next `--send-outbox`. With `--dry-run`, it
 lists what it would send.
 
+To copy every email to a mailing list, set `cc` in the `[general]`
+section of the configuration. The list receives the same emails as
+maintainers, including any restricted bugs the Bugzilla API key can see.
+
 ## Limitations
 
 - Pull requests are matched on the first 100 files they change.

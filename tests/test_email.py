@@ -24,8 +24,16 @@ def test_headers():
 
     assert msg["To"] == "x11@gentoo.org"
     assert msg["From"] == "noreply@gentoo.org"
-    assert msg["Subject"] == "[Gentoo Reminder] Your package maintenance summary"
+    assert msg["Subject"] == ("[Gentoo Reminder] Package maintenance summary "
+                              "for x11@gentoo.org")
     assert msg["Message-ID"].endswith("@gentoo.org>")
+    assert msg["Cc"] is None
+
+
+def test_cc():
+    msg = render(replace(CONFIG, cc="reminders@example.org"), MAINTAINER, SECTIONS)
+
+    assert msg["Cc"] == "reminders@example.org"
 
 
 def test_text_body():

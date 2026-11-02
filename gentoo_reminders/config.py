@@ -12,6 +12,7 @@ class Config:
     output_dir: Path = Path("~/.local/share/gentoo-reminders/outbox")
     cache_dir: Path = Path("~/.cache/gentoo-reminders")
     from_address: str = "noreply@gentoo.org"
+    cc: str | None = None
     subject_prefix: str = "[Gentoo Reminder]"
     multipart: bool = True
     sendmail: str = "/usr/sbin/sendmail"
