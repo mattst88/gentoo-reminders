@@ -65,7 +65,8 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--config", required=True,
                         help="path to the TOML configuration file")
     parser.add_argument("--maintainer",
-                        help="only process the maintainer with this email address")
+                        help="only process the maintainer with this email address, "
+                             "or with --send-outbox, only send to them")
     parser.add_argument("--dry-run", action="store_true",
                         help="print emails instead of writing them, or with "
                              "--send-outbox, list those it would send")
@@ -166,7 +167,8 @@ def main(argv: list[str] | None = None) -> None:
     if args.send_outbox:
         config = load_config(args.config)
         try:
-            failed = send_outbox(config.output_dir, config.sendmail, args.dry_run)
+            failed = send_outbox(config.output_dir, config.sendmail, args.dry_run,
+                                 args.maintainer)
         except OSError as e:
             sys.exit(f"Failed to send: {e}")
         if failed:

@@ -111,3 +111,35 @@ def test_send_outbox_dry_run(tmp_path):
     outbox(tmp_path)
     assert send_outbox(tmp_path, "/nonexistent", dry_run=True) == 0
     assert sorted(p.name for p in tmp_path.iterdir()) == ["fails.eml", "works.eml"]
+
+
+def test_send_outbox_maintainer(tmp_path):
+    outbox(tmp_path)
+    sendmail = tmp_path / "sendmail"
+    sendmail.write_text("#!/bin/sh\ncat > /dev/null\n")
+    sendmail.chmod(0o755)
+
+    assert send_outbox(tmp_path, str(sendmail), maintainer="Works@gentoo.org") == 0
+    assert [p.name for p in tmp_path.glob("*.eml")] == ["fails.eml"]
+    assert [p.name for p in (tmp_path / "sent").iterdir()] == ["works.eml"]
+
+
+def test_send_outbox_maintainer_without_emails(tmp_path, caplog):
+    outbox(tmp_path)
+    assert send_outbox(tmp_path, "/nonexistent", maintainer="larry@gentoo.org") == 0
+    assert sorted(p.name for p in tmp_path.glob("*.eml")) == ["fails.eml", "works.eml"]
+    assert "No emails to larry@gentoo.org" in caplog.text
+
+
+def test_send_outbox_maintainer_dry_run(tmp_path, caplog):
+    outbox(tmp_path)
+    caplog.set_level("INFO")
+    send_outbox(tmp_path, "/nonexistent", dry_run=True, maintainer="works@gentoo.org")
+    assert "works.eml" in caplog.text
+    assert "fails.eml" not in caplog.text
+
+
+def test_send_outbox_empty_maintainer_sends_nothing(tmp_path):
+    outbox(tmp_path)
+    assert send_outbox(tmp_path, "/nonexistent", maintainer="") == 0
+    assert sorted(p.name for p in tmp_path.glob("*.eml")) == ["fails.eml", "works.eml"]

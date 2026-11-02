@@ -72,7 +72,8 @@ To send what was written, with the `sendmail` of the configuration:
 
 Each email sent is moved to `sent` in `output_dir`. Those that fail stay
 behind, to be sent by the next `--send-outbox`. With `--dry-run`, it
-lists what it would send.
+lists what it would send. With `--maintainer`, it sends only the emails
+to that maintainer, leaving the rest in `output_dir`.
 
 To copy every email to a mailing list, set `cc` in the `[general]`
 section of the configuration. The list receives the same emails as

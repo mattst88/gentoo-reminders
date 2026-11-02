@@ -64,14 +64,20 @@ def write_email(output_dir: Path, email: str, msg: EmailMessage) -> Path:
     return path
 
 
-def send_outbox(output_dir: Path, sendmail: str, dry_run: bool = False) -> int:
-    """Send each .eml file in `output_dir`, moving it to `sent` there once
-    sent. Return how many failed, which are left to be retried."""
+def send_outbox(output_dir: Path, sendmail: str, dry_run: bool = False,
+                maintainer: str | None = None) -> int:
+    """Send each .eml file in `output_dir`, or only those to `maintainer` if
+    given, moving it to `sent` there once sent. Return how many failed, which
+    are left to be retried."""
     sent = output_dir / "sent"
     failed = 0
+    found = False
     for path in sorted(output_dir.glob("*.eml")):
         data = path.read_bytes()
         to = BytesHeaderParser().parsebytes(data)["To"]
+        if maintainer is not None and (to or "").lower() != maintainer.lower():
+            continue
+        found = True
         if dry_run:
             log.info("Would send %s to %s", path.name, to)
             continue
@@ -90,4 +96,6 @@ def send_outbox(output_dir: Path, sendmail: str, dry_run: bool = False) -> int:
         sent.mkdir(exist_ok=True)
         path.rename(sent / path.name)
         log.info("Sent %s to %s", path.name, to)
+    if maintainer is not None and not found:
+        log.warning("No emails to %s in %s", maintainer, output_dir)
     return failed

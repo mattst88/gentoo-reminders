@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from gentoo_reminders import __version__
+from gentoo_reminders import __version__, cli
 from gentoo_reminders.cli import collector_names, month, parse_args, process
 from gentoo_reminders.collectors.base import Collector, Item, Section
 from gentoo_reminders.config import Config
@@ -52,6 +52,16 @@ def test_month():
     for value in ("2026-13", "October", "2026-10-01"):
         with pytest.raises(argparse.ArgumentTypeError):
             month(value)
+
+
+def test_send_outbox_maintainer(tmp_path, monkeypatch):
+    config = Config(gentoo_repo=Path("/nonexistent"), output_dir=tmp_path)
+    calls = []
+    monkeypatch.setattr(cli, "load_config", lambda path: config)
+    monkeypatch.setattr(cli, "send_outbox", lambda *args: calls.append(args) or 0)
+
+    cli.main(["--config", "x", "--send-outbox", "--maintainer", "larry@gentoo.org"])
+    assert calls == [(tmp_path, config.sendmail, False, "larry@gentoo.org")]
 
 
 def test_version(capsys):
