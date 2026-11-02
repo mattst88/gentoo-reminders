@@ -26,6 +26,16 @@ as `.eml` files, and sent in a separate step.
 - a [bugs.gentoo.org API key](https://bugs.gentoo.org/userprefs.cgi?tab=apikey),
   set as `api_key` in the `[bugzilla]` section of the configuration
 
+Only the `metadata.xml` files, `.mailmap` and the history of gentoo.git
+are read, so the checkout can be a sparse partial clone. It cannot be
+bare or a copy without git history, and a shallow clone gives wrong
+reports.
+
+    git clone --filter=blob:none --no-checkout https://github.com/gentoo/gentoo.git
+    cd gentoo
+    git sparse-checkout set --no-cone '/*/*/metadata.xml' /.mailmap
+    git checkout master
+
 ## Usage
 
     pip install .
