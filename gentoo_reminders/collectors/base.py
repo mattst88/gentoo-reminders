@@ -22,6 +22,7 @@ class Section:
     items: list[Item] = field(default_factory=list)
     text: str = ""  # preformatted, shown instead of items
     urls_in_text: bool = False  # also print each item's URL in the text part
+    notice: bool = False  # not worth an email on its own
 
 
 class Collector:

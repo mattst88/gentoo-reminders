@@ -101,7 +101,7 @@ async def process(config: Config, maintainer: Maintainer, collectors: list[Colle
         results = await asyncio.gather(
             *(collect(c, maintainer) for c in collectors))
         sections = [s for result in results for s in result if s.items or s.text]
-        if not sections:
+        if all(s.notice for s in sections):
             log.info("Nothing to report for %s", maintainer.email)
             return
 

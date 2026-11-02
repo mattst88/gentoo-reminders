@@ -16,7 +16,8 @@ listing:
   month, and those still open, from bugs.gentoo.org
 
 Maintainers with nothing to report get no email. The emails are written
-as `.eml` files, and sent in a separate step.
+as `.eml` files, and sent in a separate step. If GitHub cannot be read,
+the emails say so in place of the pull requests.
 
 ## Requirements
 
