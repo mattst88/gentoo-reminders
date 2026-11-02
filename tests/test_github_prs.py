@@ -31,11 +31,11 @@ def test_group_by_package():
     assert grouped["media-libs/mesa"][0].url == "https://example.org/1"
 
 
-def setup(monkeypatch, errors):
+def setup(monkeypatch, errors, **options):
     calls = []
 
-    async def run(*args, timeout):
-        calls.append(args)
+    async def run(*args, timeout, env):
+        calls.append((args, env))
         if errors:
             raise RuntimeError(errors.pop(0))
         return "[]"
@@ -45,9 +45,19 @@ def setup(monkeypatch, errors):
 
     monkeypatch.setattr(github_prs, "run", run)
     monkeypatch.setattr(github_prs.asyncio, "sleep", sleep)
-    collector = GitHubPRsCollector(Config(gentoo_repo=Path("/nonexistent")))
+    collector = GitHubPRsCollector(Config(gentoo_repo=Path("/nonexistent"), **options))
     asyncio.run(collector.setup())
     return calls
+
+
+def test_token(monkeypatch):
+    error = "gh exited with status 1: HTTP 502: 502 Bad Gateway"
+    calls = setup(monkeypatch, [error, error], github_token="secret")
+    assert [env["GH_TOKEN"] for _, env in calls] == ["secret"] * 3
+
+
+def test_no_token(monkeypatch):
+    assert [env for _, env in setup(monkeypatch, [])] == [None]
 
 
 def test_retries_server_errors(monkeypatch):

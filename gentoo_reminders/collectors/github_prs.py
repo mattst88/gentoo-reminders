@@ -3,6 +3,7 @@
 import asyncio
 import json
 import logging
+import os
 import re
 from collections import defaultdict
 
@@ -38,10 +39,12 @@ class GitHubPRsCollector(PackageCollector):
                 "--state", "open",
                 "--limit", "10000",
                 "--json", "number,title,url,files")
+        token = self.config.github_token
+        env = {**os.environ, "GH_TOKEN": token} if token else None
         # GitHub sometimes answers this query with a 502.
         for delay in (10, 30):
             try:
-                out = await run(*args, timeout=900)
+                out = await run(*args, timeout=900, env=env)
                 break
             except RuntimeError as e:
                 if not re.search(r"\bHTTP 5\d\d\b", str(e)):
@@ -49,5 +52,5 @@ class GitHubPRsCollector(PackageCollector):
                 log.warning("%s, retrying in %ds", e, delay)
                 await asyncio.sleep(delay)
         else:
-            out = await run(*args, timeout=900)
+            out = await run(*args, timeout=900, env=env)
         self.items = group_by_package(json.loads(out))

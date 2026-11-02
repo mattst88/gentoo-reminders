@@ -25,7 +25,10 @@ sendmail = "/usr/sbin/sendmail"
 # Repository whose open pull requests are listed, read with the gh CLI
 repo = "gentoo/gentoo"
 
+# File with a token for gh. Without it, gh uses its own login.
+#secret_file = "~/.config/gentoo-reminders/gh-token"
+
 [bugzilla]
-# Required by the bugs and new_bugs collectors. Without one, Bugzilla hides
-# the domains of email addresses.
-api_key = ""
+# File with an API key, required by the bugs and new_bugs collectors. Without
+# one, Bugzilla hides the domains of email addresses.
+#secret_file = "~/.config/gentoo-reminders/bugzilla-api-key"

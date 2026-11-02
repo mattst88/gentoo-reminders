@@ -15,12 +15,13 @@ log = logging.getLogger(__name__)
 USER_AGENT = "gentoo-reminders"
 
 
-async def run(*args: str, timeout: int = 300) -> str:
+async def run(*args: str, timeout: int = 300, env: dict[str, str] | None = None) -> str:
     """Run a command and return its stdout, raising if it fails or times out."""
     proc = await asyncio.create_subprocess_exec(
         *args,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
+        env=env,
     )
     try:
         stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout)

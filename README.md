@@ -22,9 +22,11 @@ as `.eml` files, and sent in a separate step.
 
 - Python 3.11 or later
 - a checkout of gentoo.git
-- the [GitHub CLI](https://cli.github.com/), logged in
+- the [GitHub CLI](https://cli.github.com/), logged in, or a token in the
+  file named by `secret_file` in the `[github]` section of the configuration
 - a [bugs.gentoo.org API key](https://bugs.gentoo.org/userprefs.cgi?tab=apikey),
-  set as `api_key` in the `[bugzilla]` section of the configuration
+  in the file named by `secret_file` in the `[bugzilla]` section of the
+  configuration
 
 Only the `metadata.xml` files, `.mailmap` and the history of gentoo.git
 are read, so the checkout can be a sparse partial clone. It cannot be

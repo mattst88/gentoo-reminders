@@ -17,7 +17,7 @@ FIELDS = "id,summary,assigned_to,last_change_time"
 
 async def search(api_key: str | None, **params: str | list[str]) -> list[dict]:
     if not api_key:
-        raise RuntimeError("no Bugzilla API key, set api_key in [bugzilla]")
+        raise RuntimeError("no Bugzilla API key, set secret_file in [bugzilla]")
 
     bugs: list[dict] = []
     while True:

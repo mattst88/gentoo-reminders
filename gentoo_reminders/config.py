@@ -17,18 +17,24 @@ class Config:
     multipart: bool = True
     sendmail: str = "/usr/sbin/sendmail"
     github_repo: str = "gentoo/gentoo"
+    github_token: str | None = None
+    github_secret_file: str | None = None
     bugzilla_api_key: str | None = None
+    bugzilla_secret_file: str | None = None
 
 
 # Each section's options, as Config fields with this prefix
 SECTIONS = {"general": "", "github": "github_", "bugzilla": "bugzilla_"}
+
+# Each Config field naming a file, and the one set from that file's contents
+SECRETS = {"github_secret_file": "github_token", "bugzilla_secret_file": "bugzilla_api_key"}
 
 
 def load_config(path: str) -> Config:
     with open(path, "rb") as f:
         data = tomllib.load(f)
 
-    known = {f.name for f in fields(Config)}
+    known = {f.name for f in fields(Config)} - set(SECRETS.values())
     options = {}
     unknown = [f"[{section}]" for section in data if section not in SECTIONS]
     for section, prefix in SECTIONS.items():
@@ -47,4 +53,12 @@ def load_config(path: str) -> Config:
 
     for key in ("gentoo_repo", "output_dir", "cache_dir"):
         setattr(config, key, Path(getattr(config, key)).expanduser())
+
+    for option, secret in SECRETS.items():
+        if not (secret_file := getattr(config, option)):
+            continue
+        try:
+            setattr(config, secret, Path(secret_file).expanduser().read_text().strip())
+        except (OSError, UnicodeDecodeError) as e:
+            sys.exit(f"{path}: {e}")
     return config
