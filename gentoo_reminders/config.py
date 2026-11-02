@@ -54,6 +54,9 @@ def load_config(path: str) -> Config:
     for key in ("gentoo_repo", "output_dir", "cache_dir"):
         setattr(config, key, Path(getattr(config, key)).expanduser())
 
+    if config.github_repo.count("/") != 1:
+        sys.exit(f"{path}: [github] repo is not owner/name: {config.github_repo}")
+
     for option, secret in SECRETS.items():
         if not (secret_file := getattr(config, option)):
             continue

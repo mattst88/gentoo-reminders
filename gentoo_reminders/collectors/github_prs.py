@@ -13,6 +13,33 @@ from ..util import run
 
 log = logging.getLogger(__name__)
 
+# GitHub often answers with a 502 when asked for many more of these at once.
+# It lists at most the first 100 files of each pull request.
+QUERY = """
+query($owner: String!, $name: String!, $cursor: String) {
+  repository(owner: $owner, name: $name) {
+    pullRequests(states: OPEN, first: 50, after: $cursor) {
+      pageInfo { hasNextPage endCursor }
+      nodes { number title url files(first: 100) { nodes { path } } }
+    }
+  }
+}
+"""
+
+
+async def request(*args: str, env: dict[str, str] | None) -> str:
+    # GitHub sometimes answers with a 502, or a rate limit that asks to wait
+    # a few minutes.
+    for delay in (10, 30, 300):
+        try:
+            return await run(*args, env=env)
+        except RuntimeError as e:
+            if not re.search(r"\bHTTP 5\d\d\b|rate limit", str(e)):
+                raise
+            log.warning("%s, retrying in %ds", e, delay)
+            await asyncio.sleep(delay)
+    return await run(*args, env=env)
+
 
 def group_by_package(prs: list[dict]) -> dict[str, list[Item]]:
     """Map each package to the pull requests that touch its files."""
@@ -21,7 +48,7 @@ def group_by_package(prs: list[dict]) -> dict[str, list[Item]]:
         item = Item(f"PR #{pr['number']}", f": {pr['title']}", pr["url"])
         packages = {
             "/".join(parts[:2])
-            for f in pr["files"]
+            for f in pr["files"]["nodes"]
             if len(parts := f["path"].split("/")) >= 3
         }
         for package in packages:
@@ -36,7 +63,7 @@ class GitHubPRsCollector(PackageCollector):
 
     async def setup(self) -> None:
         try:
-            self.items = group_by_package(json.loads(await self.fetch()))
+            self.items = group_by_package(await self.fetch())
         except Exception as e:
             log.warning("Failed to fetch pull requests: %s", e)
             self.items = None
@@ -46,22 +73,19 @@ class GitHubPRsCollector(PackageCollector):
             return [Section(self.title, text="Could not be fetched from GitHub.", notice=True)]
         return await super().collect(maintainer)
 
-    async def fetch(self) -> str:
-        # gh lists at most the first 100 files of each pull request.
-        args = ("gh", "pr", "list",
-                "--repo", self.config.github_repo,
-                "--state", "open",
-                "--limit", "10000",
-                "--json", "number,title,url,files")
+    async def fetch(self) -> list[dict]:
+        owner, name = self.config.github_repo.split("/")
+        args = ("gh", "api", "graphql", "-f", f"query={QUERY}",
+                "-f", f"owner={owner}", "-f", f"name={name}")
         token = self.config.github_token
         env = {**os.environ, "GH_TOKEN": token} if token else None
-        # GitHub sometimes answers this query with a 502.
-        for delay in (10, 30):
-            try:
-                return await run(*args, timeout=900, env=env)
-            except RuntimeError as e:
-                if not re.search(r"\bHTTP 5\d\d\b", str(e)):
-                    raise
-                log.warning("%s, retrying in %ds", e, delay)
-                await asyncio.sleep(delay)
-        return await run(*args, timeout=900, env=env)
+
+        prs = []
+        after = ()
+        while True:
+            out = await request(*args, *after, env=env)
+            page = json.loads(out)["data"]["repository"]["pullRequests"]
+            prs += page["nodes"]
+            if not page["pageInfo"]["hasNextPage"]:
+                return prs
+            after = ("-f", f"cursor={page['pageInfo']['endCursor']}")
