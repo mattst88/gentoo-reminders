@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import asyncio
+import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
-from .base import Collector, Section
+from .base import Collector, Section, omitted
 from ..maintainers import Maintainer
 from ..util import fetch, run
 
 
 PROJECTS_URL = "https://api.gentoo.org/metastructure/projects.xml"
+
+# Subjects of stabilization and keywording commits, as nattka writes them
+# ("Stabilize 1.0 amd64, #123") and pkgdev commit does ("stabilize 1.0 for amd64")
+ARCH_COMMIT = re.compile(r"^[^:\s]+: (?:stabilize|keyword) \d", re.IGNORECASE)
 
 
 def parse_projects(data: bytes) -> dict[str, set[str]]:
@@ -42,6 +47,14 @@ def parse_projects(data: bytes) -> dict[str, set[str]]:
     return {email: members(email, set()) for email in direct}
 
 
+def section(title: str, commits: list[tuple[str, str]]) -> Section:
+    """Shortlog commits, but only count stabilization and keywording ones."""
+    listed = [(author, subject) for author, subject in commits
+              if not ARCH_COMMIT.match(subject)]
+    return Section(title, text=shortlog(listed),
+                   omitted=omitted(len(commits) - len(listed), "commit"))
+
+
 def shortlog(commits: list[tuple[str, str]]) -> str:
     """Format (author, subject) pairs, oldest first, like git shortlog."""
     by_author: dict[str, list[str]] = defaultdict(list)
@@ -57,6 +70,7 @@ class ShortlogCollector(Collector):
     """Commits to the maintainer's packages in the month reported on.
 
     For a project, those by its members and by others are listed apart.
+    Stabilization and keywording commits are only counted.
     """
 
     async def setup(self) -> None:
@@ -77,13 +91,13 @@ class ShortlogCollector(Collector):
 
         members = self.projects.get(maintainer.email)
         if members is None:
-            return [Section(f"Changes in {self.month_name}",
-                            text=shortlog([(name, subject) for name, _, subject in commits]))]
+            return [section(f"Changes in {self.month_name}",
+                            [(name, subject) for name, _, subject in commits])]
         ours = [(name, subject) for name, email, subject in commits
                 if email.lower() in members]
         others = [(name, subject) for name, email, subject in commits
                   if email.lower() not in members]
         return [
-            Section(f"Changes by Project Members in {self.month_name}", text=shortlog(ours)),
-            Section(f"Changes by Others in {self.month_name}", text=shortlog(others)),
+            section(f"Changes by Project Members in {self.month_name}", ours),
+            section(f"Changes by Others in {self.month_name}", others),
         ]

@@ -26,12 +26,12 @@ LOG = (
 )
 
 
-def collect(monkeypatch, maintainer, month=None):
+def collect(monkeypatch, maintainer, month=None, log=LOG):
     commands = []
 
     async def run(*args):
         commands.append(args)
-        return LOG
+        return log
 
     monkeypatch.setattr(shortlog, "run", run)
     monkeypatch.setattr(shortlog, "fetch", lambda url: PROJECTS)
@@ -108,3 +108,35 @@ def test_parse_projects():
     assert projects["emacs@gentoo.org"] == {"larry@gentoo.org", "ulm@gentoo.org"}
     assert projects["gnu-emacs@gentoo.org"] == {"larry@gentoo.org", "ulm@gentoo.org"}
     assert projects["xemacs@gentoo.org"] == {"xemacs-dev@gentoo.org"}
+
+
+def test_shortlog_arch_commits_only_counted(monkeypatch):
+    log = (
+        "Larry the Cow\0larry@gentoo.org\0app-misc/foo: bar\n"
+        "Arch Tester\0arch@gentoo.org\0app-misc/foo: Stabilize 1.0 amd64, #123\n"
+        "Arch Tester\0arch@gentoo.org\0app-misc/foo: Keyword 1.0 ~riscv, #124\n"
+        "Somebody\0somebody@example.com\0app-misc/foo: stabilize 1.0 for ALLARCHES\n"
+        "Somebody\0somebody@example.com\0app-misc/foo: keyword 1.0 for ~arm64\n"
+        "Somebody\0somebody@example.com\0app-misc/foo: Stabilize on amd64 is broken\n"
+        "Somebody\0somebody@example.com\0app-misc/foo: unkeyword 1.0 for ~x86\n"
+    )
+    maintainer = Maintainer("x11@gentoo.org", packages=["app-misc/foo"])
+    _, [members, others] = collect(monkeypatch, maintainer, log=log)
+
+    assert members.text == "Larry the Cow (1):\n      app-misc/foo: bar"
+    assert members.omitted == ""
+    assert others.text == (
+        "Somebody (2):\n"
+        "      app-misc/foo: Stabilize on amd64 is broken\n"
+        "      app-misc/foo: unkeyword 1.0 for ~x86"
+    )
+    assert others.omitted == "4 stabilization and keywording commits not shown"
+
+
+def test_shortlog_only_arch_commits(monkeypatch):
+    log = "Arch Tester\0arch@gentoo.org\0app-misc/foo: Stabilize 1.0 amd64, #123\n"
+    maintainer = Maintainer("larry@gentoo.org", packages=["app-misc/foo"])
+    _, [section] = collect(monkeypatch, maintainer, log=log)
+
+    assert section.text == ""
+    assert section.omitted == "1 stabilization and keywording commit not shown"

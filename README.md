@@ -16,7 +16,8 @@ listing:
 - the bugs assigned to them that were filed or closed in the previous
   month, and those still open, from bugs.gentoo.org
 
-Stabilization and keywording bugs are counted rather than listed.
+Stabilization and keywording commits and bugs are counted rather than
+listed.
 
 Maintainers with nothing to report get no email. The emails are written
 as `.eml` files, and sent in a separate step. If GitHub cannot be read,
