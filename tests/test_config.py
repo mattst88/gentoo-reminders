@@ -19,10 +19,11 @@ def test_sections(tmp_path):
     assert load_config(str(path)).github_repo == "a/b"
 
 
-def test_github_repo_needs_owner(tmp_path):
+@pytest.mark.parametrize("section", ["github", "codeberg"])
+def test_repo_needs_owner(tmp_path, section):
     path = tmp_path / "config.toml"
-    path.write_text('[general]\ngentoo_repo = "/gentoo"\n[github]\nrepo = "gentoo"\n')
-    with pytest.raises(SystemExit, match="not owner/name"):
+    path.write_text(f'[general]\ngentoo_repo = "/gentoo"\n[{section}]\nrepo = "gentoo"\n')
+    with pytest.raises(SystemExit, match=rf"\[{section}\] repo is not owner/name"):
         load_config(str(path))
 
 

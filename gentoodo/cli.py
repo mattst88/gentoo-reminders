@@ -9,6 +9,7 @@ from datetime import date, datetime
 from . import __version__, repo
 from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
+from .collectors.codeberg_prs import CodebergPRsCollector
 from .collectors.github_prs import GitHubPRsCollector
 from .collectors.outdated import OutdatedCollector
 from .collectors.qa import QACollector
@@ -27,6 +28,7 @@ COLLECTORS = {
     "outdated": OutdatedCollector,
     "stable_requests": StableRequestsCollector,
     "github_prs": GitHubPRsCollector,
+    "codeberg_prs": CodebergPRsCollector,
     "redundant": RedundantVersionsCollector,
     "shortlog": ShortlogCollector,
     "qa": QACollector,

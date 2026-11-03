@@ -20,12 +20,13 @@ class Config:
     github_repo: str = "gentoo/gentoo"
     github_token: str | None = None
     github_secret_file: str | None = None
+    codeberg_repo: str = "gentoo/gentoo"
     bugzilla_api_key: str | None = None
     bugzilla_secret_file: str | None = None
 
 
 # Each section's options, as Config fields with this prefix
-SECTIONS = {"general": "", "github": "github_", "bugzilla": "bugzilla_"}
+SECTIONS = {"general": "", "github": "github_", "codeberg": "codeberg_", "bugzilla": "bugzilla_"}
 
 # Each Config field naming a file, and the one set from that file's contents
 SECRETS = {"github_secret_file": "github_token", "bugzilla_secret_file": "bugzilla_api_key"}
@@ -56,8 +57,9 @@ def load_config(path: str) -> Config:
         if (value := getattr(config, key)) is not None:
             setattr(config, key, Path(value).expanduser())
 
-    if config.github_repo.count("/") != 1:
-        sys.exit(f"{path}: [github] repo is not owner/name: {config.github_repo}")
+    for section in ("github", "codeberg"):
+        if (repo := getattr(config, f"{section}_repo")).count("/") != 1:
+            sys.exit(f"{path}: [{section}] repo is not owner/name: {repo}")
 
     for option, secret in SECRETS.items():
         if not (secret_file := getattr(config, option)):

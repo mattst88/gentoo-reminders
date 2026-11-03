@@ -7,7 +7,7 @@ listing:
   (which gets them from Repology)
 - their package versions that are ready for stabilization, from Gentoo's
   CI
-- the open GitHub pull requests that touch their packages
+- the open GitHub and Codeberg pull requests that touch their packages
 - their redundant package versions, from Gentoo's CI
 - the commits to their packages in the previous month (for a project,
   split into commits by its members and by others)
@@ -21,8 +21,8 @@ Stabilization and keywording commits and bugs are counted rather than
 listed.
 
 Maintainers with nothing to report get no email. The emails are written
-as `.eml` files, and sent in a separate step. If GitHub cannot be read,
-the emails say so in place of the pull requests.
+as `.eml` files, and sent in a separate step. If GitHub or Codeberg
+cannot be read, the emails say so in place of its pull requests.
 
 ## Requirements
 
@@ -56,8 +56,8 @@ instead, up to now if it is the current month.
 Unless `--no-pull` is given, the repository is first updated with
 `git fetch`, or with `git pull --ff-only` if it is not bare.
 `--collectors` limits the run to some of
-`outdated`, `stable_requests`, `github_prs`, `redundant`, `shortlog`,
-`qa`, `new_bugs` and `bugs`.
+`outdated`, `stable_requests`, `github_prs`, `codeberg_prs`, `redundant`,
+`shortlog`, `qa`, `new_bugs` and `bugs`.
 
 The pkgcheck reports of Gentoo's CI come from
 [qa-reports.gentoo.org](https://qa-reports.gentoo.org/), found by date

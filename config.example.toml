@@ -30,6 +30,10 @@ repo = "gentoo/gentoo"
 # File with a token for gh. Without it, gh uses its own login.
 #secret_file = "~/.config/gentoodo/gh-token"
 
+[codeberg]
+# Repository whose open pull requests are listed, read via the Forgejo API
+repo = "gentoo/gentoo"
+
 [bugzilla]
 # File with an API key, required by the bugs and new_bugs collectors. Without
 # one, Bugzilla hides the domains of email addresses.
