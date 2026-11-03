@@ -46,6 +46,7 @@ def test_search_sends_api_key(monkeypatch):
     query = parse_qs(urlsplit(urls[0]).query)
     assert query["Bugzilla_api_key"] == ["secret"]
     assert query["status"] == ["CONFIRMED"]
+    assert query["product"] == ["Gentoo Linux"]
 
 
 def test_search_requires_api_key():

@@ -16,6 +16,7 @@ PAGE_SIZE = 10000  # the most the server returns per request
 FIELDS = "id,summary,component,assigned_to,last_change_time"
 # Stabilization and keywording bugs
 ARCH_COMPONENTS = {"Stabilization", "Keywording"}
+PRODUCT = "Gentoo Linux"  # package bugs
 
 
 async def search(api_key: str | None, **params: str | list[str]) -> list[dict]:
@@ -26,6 +27,7 @@ async def search(api_key: str | None, **params: str | list[str]) -> list[dict]:
     while True:
         query = urlencode({
             **params,
+            "product": PRODUCT,
             "include_fields": FIELDS,
             "order": "bug_id",
             "limit": PAGE_SIZE,

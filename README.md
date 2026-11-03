@@ -14,7 +14,8 @@ listing:
 - the pkgcheck errors and warnings new in the previous month, from
   Gentoo's CI
 - the bugs assigned to them that were filed or closed in the previous
-  month, and those still open, from bugs.gentoo.org
+  month, and those still open, from the Gentoo Linux product of
+  bugs.gentoo.org
 
 Stabilization and keywording commits and bugs are counted rather than
 listed.
