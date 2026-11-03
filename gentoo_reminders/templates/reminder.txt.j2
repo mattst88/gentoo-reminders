@@ -11,9 +11,11 @@ Last commit committed: {{ maintainer.last_committed }}
 {% endif %}
 {% for section in sections %}
 
-{% if section.text %}
+{% if section.text or not section.items %}
 == {{ section.title }} ==
+{% if section.text %}
 {{ section.text }}
+{% endif %}
 {% else %}
 == {{ section.title }} ({{ section.items | length }}) ==
 
@@ -23,6 +25,10 @@ Last commit committed: {{ maintainer.last_committed }}
     {{ item.url }}
 {% endif %}
 {% endfor %}
+{% endif %}
+{% if section.omitted %}
+
+({{ section.omitted }})
 {% endif %}
 {% endfor %}
 

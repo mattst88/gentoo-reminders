@@ -43,6 +43,19 @@ def test_notice_is_shown_with_other_sections(tmp_path):
     assert b"Could not be fetched from GitHub." in email.read_bytes()
 
 
+ARCH_ONLY = Section("Bugs Filed in October 2026",
+                    omitted="3 stabilization and keywording bugs not shown")
+
+
+def test_arch_activity_alone_sends_no_email(tmp_path):
+    assert not written(tmp_path, ARCH_ONLY)
+
+
+def test_arch_activity_is_counted_with_other_sections(tmp_path):
+    [email] = written(tmp_path, ARCH_ONLY, Section("Open Bugs", [Item("Bug #1")]))
+    assert b"3 stabilization and keywording bugs not shown" in email.read_bytes()
+
+
 def test_collector_names_in_email_order():
     assert collector_names("shortlog,github_prs,shortlog") == ["github_prs", "shortlog"]
 

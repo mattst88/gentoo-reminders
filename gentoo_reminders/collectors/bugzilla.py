@@ -3,16 +3,19 @@
 import asyncio
 import json
 from collections import defaultdict
+from collections.abc import Callable
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 
-from .base import Collector, Item, Section
+from .base import Collector, Item, Section, omitted
 from ..maintainers import Maintainer
 from ..util import fetch
 
 URL = "https://bugs.gentoo.org"
 PAGE_SIZE = 10000  # the most the server returns per request
-FIELDS = "id,summary,assigned_to,last_change_time"
+FIELDS = "id,summary,component,assigned_to,last_change_time"
+# Stabilization and keywording bugs
+ARCH_COMPONENTS = {"Stabilization", "Keywording"}
 
 
 async def search(api_key: str | None, **params: str | list[str]) -> list[dict]:
@@ -55,6 +58,14 @@ def item(bug: dict, note: str = "") -> Item:
     return Item(f"Bug #{bug['id']}", f": {bug['summary']}{note}", f"{URL}/{bug['id']}")
 
 
+def section(title: str, bugs: list[dict],
+            note: Callable[[dict], str] = lambda bug: "") -> Section:
+    """List bugs, but only count stabilization and keywording bugs."""
+    items = [item(bug, note(bug)) for bug in bugs
+             if bug["component"] not in ARCH_COMPONENTS]
+    return Section(title, items, omitted=omitted(len(bugs) - len(items), "bug"))
+
+
 class BugsCollector(Collector):
     async def setup(self) -> None:
         self.bugs = by_assignee(await search(
@@ -62,11 +73,8 @@ class BugsCollector(Collector):
             status=["UNCONFIRMED", "CONFIRMED", "IN_PROGRESS"]))
 
     async def collect(self, maintainer: Maintainer) -> list[Section]:
-        items = [
-            item(bug, f" (last changed {bug['last_change_time'][:10]})")
-            for bug in self.bugs.get(maintainer.email, ())
-        ]
-        return [Section("Open Bugs", items)]
+        return [section("Open Bugs", self.bugs.get(maintainer.email, []),
+                        lambda bug: f" (last changed {bug['last_change_time'][:10]})")]
 
 
 class NewBugsCollector(Collector):
@@ -86,9 +94,9 @@ class NewBugsCollector(Collector):
         self.closed = by_assignee(closed)
 
     async def collect(self, maintainer: Maintainer) -> list[Section]:
-        new = [item(bug) for bug in self.new.get(maintainer.email, ())]
-        closed = [item(bug) for bug in self.closed.get(maintainer.email, ())]
         return [
-            Section(f"Bugs Filed in {self.month_name}", new),
-            Section(f"Bugs Closed in {self.month_name}", closed),
+            section(f"Bugs Filed in {self.month_name}",
+                    self.new.get(maintainer.email, [])),
+            section(f"Bugs Closed in {self.month_name}",
+                    self.closed.get(maintainer.email, [])),
         ]

@@ -11,15 +11,15 @@ from urllib.parse import parse_qs, urlsplit
 import pytest
 
 from gentoo_reminders.collectors import bugzilla
-from gentoo_reminders.collectors.bugzilla import NewBugsCollector, by_assignee
+from gentoo_reminders.collectors.bugzilla import BugsCollector, NewBugsCollector, by_assignee
 from gentoo_reminders.config import Config
 from gentoo_reminders.maintainers import Maintainer
 from gentoo_reminders.util import previous_month
 
 
-def bug(bug_id, assignee, time):
-    return {"id": bug_id, "summary": f"bug {bug_id}", "assigned_to": assignee,
-            "last_change_time": time}
+def bug(bug_id, assignee, time, component="Current packages"):
+    return {"id": bug_id, "summary": f"bug {bug_id}", "component": component,
+            "assigned_to": assignee, "last_change_time": time}
 
 
 def test_by_assignee():
@@ -84,3 +84,26 @@ def test_new_bugs_for_previous_month(monkeypatch):
     assert new.title == f"Bugs Filed in {month}"
     assert closed.title == f"Bugs Closed in {month}"
     assert [item.ref for item in new.items + closed.items] == ["Bug #1", "Bug #2"]
+
+
+def test_arch_bugs_only_counted(monkeypatch):
+    async def search(api_key, **params):
+        return [
+            bug(1, "x11@gentoo.org", "2026-01-01T00:00:00Z"),
+            bug(2, "x11@gentoo.org", "2026-01-02T00:00:00Z", "Stabilization"),
+            bug(3, "x11@gentoo.org", "2026-01-03T00:00:00Z", "Keywording"),
+            bug(4, "larry@gentoo.org", "2026-01-04T00:00:00Z", "Stabilization"),
+        ]
+
+    monkeypatch.setattr(bugzilla, "search", search)
+    collector = BugsCollector(Config(gentoo_repo=Path("/nonexistent")))
+    asyncio.run(collector.setup())
+
+    [x11] = asyncio.run(collector.collect(Maintainer("x11@gentoo.org")))
+    assert [item.ref for item in x11.items] == ["Bug #1"]
+    assert x11.items[0].text == ": bug 1 (last changed 2026-01-01)"
+    assert x11.omitted == "2 stabilization and keywording bugs not shown"
+
+    [larry] = asyncio.run(collector.collect(Maintainer("larry@gentoo.org")))
+    assert larry.items == []
+    assert larry.omitted == "1 stabilization and keywording bug not shown"

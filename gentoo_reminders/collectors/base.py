@@ -23,6 +23,14 @@ class Section:
     text: str = ""  # preformatted, shown instead of items
     urls_in_text: bool = False  # also print each item's URL in the text part
     notice: bool = False  # not worth an email on its own
+    omitted: str = ""  # what was left out, shown after the items or text
+
+
+def omitted(count: int, what: str) -> str:
+    """Describe `count` stabilization and keywording `what`s left out."""
+    if not count:
+        return ""
+    return f"{count} stabilization and keywording {what}{'s' if count != 1 else ''} not shown"
 
 
 class Collector:

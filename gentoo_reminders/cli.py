@@ -101,8 +101,10 @@ async def process(config: Config, maintainer: Maintainer, collectors: list[Colle
     async with semaphore:
         results = await asyncio.gather(
             *(collect(c, maintainer) for c in collectors))
-        sections = [s for result in results for s in result if s.items or s.text]
-        if all(s.notice for s in sections):
+        sections = [s for result in results for s in result
+                    if s.items or s.text or s.omitted]
+        # Counts of what was left out are not worth an email on their own.
+        if all(s.notice or not (s.items or s.text) for s in sections):
             log.info("Nothing to report for %s", maintainer.email)
             return
 
