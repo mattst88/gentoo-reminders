@@ -41,10 +41,14 @@ async def request(*args: str, env: dict[str, str] | None) -> str:
     return await run(*args, env=env)
 
 
+def number(item: Item) -> int:
+    return int(item.ref.removeprefix("PR #"))
+
+
 def group_by_package(prs: list[dict]) -> dict[str, list[Item]]:
     """Map each package to the pull requests that touch its files."""
     grouped: dict[str, list[Item]] = defaultdict(list)
-    for pr in sorted(prs, key=lambda pr: pr["number"]):
+    for pr in prs:
         item = Item(f"PR #{pr['number']}", f": {pr['title']}", pr["url"])
         packages = {
             "/".join(parts[:2])
@@ -71,7 +75,10 @@ class GitHubPRsCollector(PackageCollector):
     async def collect(self, maintainer: Maintainer) -> list[Section]:
         if self.items is None:
             return [Section(self.title, text="Could not be fetched from GitHub.", notice=True)]
-        return await super().collect(maintainer)
+        sections = await super().collect(maintainer)
+        for section in sections:
+            section.items.sort(key=number)
+        return sections
 
     async def fetch(self) -> list[dict]:
         owner, name = self.config.github_repo.split("/")

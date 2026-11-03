@@ -29,8 +29,8 @@ def test_group_by_package():
 
     assert set(grouped) == {"x11-libs/libdrm", "media-libs/mesa"}
     assert [item.ref for item in grouped["x11-libs/libdrm"]] == ["PR #2"]
-    assert [item.ref for item in grouped["media-libs/mesa"]] == ["PR #1", "PR #2"]
-    assert grouped["media-libs/mesa"][0].url == "https://example.org/1"
+    mesa = {item.ref: item.url for item in grouped["media-libs/mesa"]}
+    assert mesa == {"PR #1": "https://example.org/1", "PR #2": "https://example.org/2"}
 
 
 def page(prs=(), cursor=None):
@@ -112,6 +112,18 @@ def test_does_not_retry_other_errors(monkeypatch):
     _, calls = setup(
         monkeypatch, [RuntimeError("gh exited with status 1: gh: Bad credentials (HTTP 401)")])
     assert len(calls) == 1
+
+
+def test_sorted_by_number(monkeypatch):
+    # Packages in metadata.xml order, not alphabetical, and a PR on two of them
+    prs = [pr(5, "z/z"), pr(3, "a/a"), pr(4, "m/m"), pr(1, "m/m"), pr(2, "z/z")]
+    prs[0]["files"]["nodes"].append({"path": "a/a/foo-2.ebuild"})
+    collector, _ = setup(monkeypatch, [page(prs)])
+    maintainer = Maintainer("x@gentoo.org", packages=["m/m", "z/z", "a/a"])
+
+    [section] = asyncio.run(collector.collect(maintainer))
+
+    assert [item.ref for item in section.items] == [f"PR #{n}" for n in range(1, 6)]
 
 
 def test_failure_is_a_notice(monkeypatch):
