@@ -5,7 +5,7 @@ import re
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
-from .base import Collector, Section, omitted
+from .base import Collector, Section, omitted_text
 from ..maintainers import Maintainer
 from ..util import fetch, run
 
@@ -52,7 +52,7 @@ def section(title: str, commits: list[tuple[str, str]]) -> Section:
     listed = [(author, subject) for author, subject in commits
               if not ARCH_COMMIT.match(subject)]
     return Section(title, text=shortlog(listed),
-                   omitted=omitted(len(commits) - len(listed), "commit"))
+                   omitted=omitted_text(len(commits) - len(listed), "commit"))
 
 
 def shortlog(commits: list[tuple[str, str]]) -> str:

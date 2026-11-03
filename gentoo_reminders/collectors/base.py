@@ -26,7 +26,7 @@ class Section:
     omitted: str = ""  # what was left out, shown after the items or text
 
 
-def omitted(count: int, what: str) -> str:
+def omitted_text(count: int, what: str) -> str:
     """Describe `count` stabilization and keywording `what`s left out."""
     if not count:
         return ""

@@ -7,14 +7,13 @@ from collections.abc import Callable
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 
-from .base import Collector, Item, Section, omitted
+from .base import Collector, Item, Section, omitted_text
 from ..maintainers import Maintainer
 from ..util import fetch
 
 URL = "https://bugs.gentoo.org"
 PAGE_SIZE = 10000  # the most the server returns per request
 FIELDS = "id,summary,component,assigned_to,last_change_time"
-# Stabilization and keywording bugs
 ARCH_COMPONENTS = {"Stabilization", "Keywording"}
 PRODUCT = "Gentoo Linux"  # package bugs
 
@@ -65,7 +64,7 @@ def section(title: str, bugs: list[dict],
     """List bugs, but only count stabilization and keywording bugs."""
     items = [item(bug, note(bug)) for bug in bugs
              if bug["component"] not in ARCH_COMPONENTS]
-    return Section(title, items, omitted=omitted(len(bugs) - len(items), "bug"))
+    return Section(title, items, omitted=omitted_text(len(bugs) - len(items), "bug"))
 
 
 class BugsCollector(Collector):
