@@ -3,8 +3,6 @@
 import os
 import subprocess
 
-import pytest
-
 from gentoo_reminders.maintainers import Maintainer, find_last_commits, load_maintainers
 
 METADATA = """<?xml version="1.0" encoding="UTF-8"?>
@@ -55,17 +53,6 @@ def test_load_maintainers(tmp_path, git_env):
     assert not maintainers["emacs@gentoo.org"].person
     assert maintainers["xemacs@gentoo.org"].packages == ["app-editors/xemacs"]
     assert maintainers["somebody@example.com"].person
-
-
-@pytest.fixture
-def git_env(monkeypatch):
-    # GIT_DIR and the like name another repository when the tests are run
-    # from a git hook or `git rebase --exec`.
-    for name in os.environ:
-        if name.startswith("GIT_"):
-            monkeypatch.delenv(name)
-    monkeypatch.setenv("GIT_CONFIG_GLOBAL", "/dev/null")
-    monkeypatch.setenv("GIT_CONFIG_SYSTEM", "/dev/null")
 
 
 def commit(repo, subject, author, committer, date):
