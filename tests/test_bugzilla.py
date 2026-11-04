@@ -87,7 +87,7 @@ def test_new_bugs_for_previous_month(monkeypatch):
     assert [item.ref for item in new.items + closed.items] == ["Bug #1", "Bug #2"]
 
 
-def test_arch_bugs_only_counted(monkeypatch):
+def test_arch_bugs_counted_and_linked(monkeypatch):
     async def search(api_key, **params):
         return [
             bug(1, "x11@gentoo.org", "2026-01-01T00:00:00Z"),
@@ -104,7 +104,9 @@ def test_arch_bugs_only_counted(monkeypatch):
     assert [item.ref for item in x11.items] == ["Bug #1"]
     assert x11.items[0].text == ": bug 1 (last changed 2026-01-01)"
     assert x11.omitted == "2 stabilization and keywording bugs not shown"
+    assert x11.omitted_url == "https://bugs.gentoo.org/buglist.cgi?bug_id=2,3"
 
     [larry] = asyncio.run(collector.collect(Maintainer("larry@gentoo.org")))
     assert larry.items == []
     assert larry.omitted == "1 stabilization and keywording bug not shown"
+    assert larry.omitted_url == "https://bugs.gentoo.org/buglist.cgi?bug_id=4"

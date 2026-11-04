@@ -61,10 +61,12 @@ def item(bug: dict, note: str = "") -> Item:
 
 def section(title: str, bugs: list[dict],
             note: Callable[[dict], str] = lambda bug: "") -> Section:
-    """List bugs, but only count stabilization and keywording bugs."""
+    """List bugs, but only count and link to stabilization and keywording bugs."""
     items = [item(bug, note(bug)) for bug in bugs
              if bug["component"] not in ARCH_COMPONENTS]
-    return Section(title, items, omitted=omitted_text(len(bugs) - len(items), "bug"))
+    arch = [str(bug["id"]) for bug in bugs if bug["component"] in ARCH_COMPONENTS]
+    return Section(title, items, omitted=omitted_text(len(arch), "bug"),
+                   omitted_url=f"{URL}/buglist.cgi?bug_id={','.join(arch)}" if arch else "")
 
 
 class BugsCollector(Collector):

@@ -24,6 +24,7 @@ class Section:
     urls_in_text: bool = False  # also print each item's URL in the text part
     notice: bool = False  # not worth an email on its own
     omitted: str = ""  # what was left out, shown after the items or text
+    omitted_url: str = ""  # where to see what was left out
 
 
 def omitted_text(count: int, what: str) -> str:

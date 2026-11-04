@@ -29,6 +29,9 @@ Last commit committed: {{ maintainer.last_committed }}
 {% if section.omitted %}
 
 ({{ section.omitted }})
+{% if section.omitted_url %}
+    {{ section.omitted_url }}
+{% endif %}
 {% endif %}
 {% endfor %}
 
