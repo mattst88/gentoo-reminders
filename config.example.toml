@@ -1,6 +1,6 @@
 [general]
-# Local checkout of the gentoo ebuild repository
-gentoo_repo = "/home/user/gentoo"
+# Clone of the gentoo ebuild repository, which can be bare
+gentoo_repo = "/home/user/gentoo.git"
 
 # Where generated .eml files are written
 output_dir = "~/.local/share/gentoo-reminders/outbox"

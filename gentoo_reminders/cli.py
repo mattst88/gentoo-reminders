@@ -125,11 +125,16 @@ async def async_main(args: argparse.Namespace) -> None:
     if not args.no_pull:
         log.info("Updating %s", repo)
         try:
-            await run("git", "-C", repo, "pull", "--ff-only")
+            bare = await run("git", "-C", repo, "rev-parse", "--is-bare-repository")
+            command = ("fetch",) if bare.strip() == "true" else ("pull", "--ff-only")
+            await run("git", "-C", repo, *command)
         except RuntimeError as e:
             sys.exit(f"{e}\nUse --no-pull to run on the repository as it is.")
 
-    maintainers = load_maintainers(config.gentoo_repo)
+    try:
+        maintainers = load_maintainers(config.gentoo_repo)
+    except RuntimeError as e:
+        sys.exit(f"Failed to read maintainers: {e}")
     log.info("Found %d maintainers", len(maintainers))
     if args.maintainer:
         maintainer = maintainers.get(args.maintainer.lower())

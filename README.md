@@ -27,7 +27,7 @@ the emails say so in place of the pull requests.
 ## Requirements
 
 - Python 3.11 or later
-- a checkout of gentoo.git
+- a clone of gentoo.git
 - the [GitHub CLI](https://cli.github.com/), logged in, or a token in the
   file named by `secret_file` in the `[github]` section of the configuration
 - a [bugs.gentoo.org API key](https://bugs.gentoo.org/userprefs.cgi?tab=apikey),
@@ -35,14 +35,12 @@ the emails say so in place of the pull requests.
   configuration
 
 Only the `metadata.xml` files, `.mailmap` and the history of gentoo.git
-are read, so the checkout can be a sparse partial clone. It cannot be
-bare or a copy without git history, and a shallow clone gives wrong
-reports.
+are read, so the repository can be a bare partial clone. It must have its
+history: a shallow clone gives wrong reports. Its `metadata.xml` files
+are read as committed in `HEAD`.
 
-    git clone --filter=blob:none --no-checkout https://github.com/gentoo/gentoo.git
-    cd gentoo
-    git sparse-checkout set --no-cone '/*/*/metadata.xml' /.mailmap
-    git checkout master
+    git clone --bare --filter=blob:none https://github.com/gentoo/gentoo.git
+    git -C gentoo.git config remote.origin.fetch 'refs/heads/*:refs/heads/*'
 
 ## Usage
 
@@ -57,8 +55,9 @@ previous month, the one before the current month in UTC, so run it early
 on the first of each month. `--month 2026-10` reports on October 2026
 instead, up to now if it is the current month.
 
-The checkout is updated with `git pull --ff-only` first, unless
-`--no-pull` is given. `--collectors` limits the run to some of
+Unless `--no-pull` is given, the repository is first updated with
+`git fetch`, or with `git pull --ff-only` if it is not bare.
+`--collectors` limits the run to some of
 `outdated`, `stable_requests`, `github_prs`, `redundant`, `shortlog`,
 `qa`, `new_bugs` and `bugs`.
 

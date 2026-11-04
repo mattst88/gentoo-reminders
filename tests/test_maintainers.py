@@ -19,9 +19,11 @@ def add_package(repo, package, body):
     path = repo / package / "metadata.xml"
     path.parent.mkdir(parents=True)
     path.write_text(METADATA.format(body))
+    subprocess.run(["git", "-C", repo, "add", path], check=True)
 
 
-def test_load_maintainers(tmp_path):
+def test_load_maintainers(tmp_path, git_env):
+    subprocess.run(["git", "init", "-q", tmp_path], check=True)
     add_package(tmp_path, "app-editors/emacs", """
         <maintainer type="project">
             <email>Emacs@gentoo.org</email>
@@ -38,6 +40,11 @@ def test_load_maintainers(tmp_path):
     add_package(tmp_path, "acct-group/emacs", """
         <maintainer type="project"><email>emacs@gentoo.org</email></maintainer>""")
     add_package(tmp_path, "app-misc/orphan", "<!-- maintainer-needed -->")
+    add_package(tmp_path, "app-editors/broken", "<maintainer>")
+    # Not committed, so not read
+    (tmp_path / "app-misc/orphan/metadata.xml").write_text(METADATA.format(
+        "<maintainer><email>orphan@gentoo.org</email></maintainer>"))
+    commit(tmp_path, "add", "dev@gentoo.org", "dev@gentoo.org", "2026-01-01T00:00:00Z")
 
     maintainers = load_maintainers(tmp_path)
 

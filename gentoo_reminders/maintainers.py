@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
+import os
 import subprocess
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
@@ -19,15 +20,60 @@ class Maintainer:
     last_committed: str | None = None
 
 
+def _git(repo: Path, *args: str, input: bytes | None = None,
+         env: dict[str, str] | None = None) -> bytes:
+    result = subprocess.run(["git", "-C", str(repo), *args], input=input, env=env,
+                            capture_output=True)
+    if result.returncode:
+        raise RuntimeError(f"git {args[0]} exited with status {result.returncode}: "
+                           f"{result.stderr.decode().strip()}")
+    return result.stdout
+
+
+def _fetch_missing(repo: Path, oids: bytes) -> None:
+    """Fetch the `oids` a partial clone lacks in one request, not one at a
+    time."""
+    check = _git(repo, "cat-file", "--batch-check", input=oids,
+                 env=os.environ | {"GIT_NO_LAZY_FETCH": "1"})
+    missing = [line.split()[0] for line in check.splitlines() if line.endswith(b" missing")]
+    if not missing:
+        return
+    log.info("Fetching %d metadata.xml files", len(missing))
+    _git(repo, "-c", "fetch.negotiationAlgorithm=noop", "fetch", "--quiet", "--stdin",
+         "origin", input=b"".join(oid + b"\n" for oid in missing))
+
+
+def _read_metadata(repo: Path) -> list[tuple[str, bytes]]:
+    """Return each package and its metadata.xml at HEAD, read from git so
+    that the repository can be bare."""
+    tree = _git(repo, "ls-tree", "-r", "-z", "--format=%(objectname) %(path)", "HEAD")
+    entries = []
+    for entry in tree.split(b"\0"):
+        if entry.endswith(b"/metadata.xml") and entry.count(b"/") == 2:
+            oid, path = entry.split(b" ", 1)
+            entries.append((path.decode().removesuffix("/metadata.xml"), oid))
+    oids = b"".join(oid + b"\n" for _, oid in entries)
+    _fetch_missing(repo, oids)
+
+    data = _git(repo, "cat-file", "--batch", input=oids)
+    result = []
+    pos = 0
+    for package, _ in entries:
+        end = data.index(b"\n", pos)
+        size = int(data[pos:end].split()[2])
+        result.append((package, data[end + 1:end + 1 + size]))
+        pos = end + 1 + size + 1
+    return result
+
+
 def load_maintainers(repo: Path) -> dict[str, Maintainer]:
     """Map each maintainer's email to their packages, from metadata.xml."""
     maintainers: dict[str, Maintainer] = {}
-    for path in sorted(repo.glob("*/*/metadata.xml")):
-        package = f"{path.parts[-3]}/{path.parts[-2]}"
+    for package, contents in _read_metadata(repo):
         try:
-            root = ET.parse(path).getroot()
+            root = ET.fromstring(contents)
         except ET.ParseError as e:
-            log.warning("Skipping %s: %s", path, e)
+            log.warning("Skipping %s/metadata.xml: %s", package, e)
             continue
 
         # Direct children only: <upstream> has <maintainer> elements too.
