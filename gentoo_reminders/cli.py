@@ -6,7 +6,7 @@ import logging
 import sys
 from datetime import date, datetime
 
-from . import __version__
+from . import __version__, repo
 from .collectors.base import Collector, Section
 from .collectors.bugzilla import BugsCollector, NewBugsCollector
 from .collectors.github_prs import GitHubPRsCollector
@@ -18,7 +18,7 @@ from .collectors.stable_requests import StableRequestsCollector
 from .config import Config, load_config
 from .email import render, send_outbox, write_email
 from .maintainers import Maintainer, find_last_commits, load_maintainers
-from .util import month_days, run
+from .util import month_days
 
 log = logging.getLogger(__name__)
 
@@ -120,16 +120,12 @@ async def process(config: Config, maintainer: Maintainer, collectors: list[Colle
 
 async def async_main(args: argparse.Namespace) -> None:
     config = load_config(args.config)
-    repo = str(config.gentoo_repo)
-
-    if not args.no_pull:
-        log.info("Updating %s", repo)
-        try:
-            bare = await run("git", "-C", repo, "rev-parse", "--is-bare-repository")
-            command = ("fetch",) if bare.strip() == "true" else ("pull", "--ff-only")
-            await run("git", "-C", repo, *command)
-        except RuntimeError as e:
-            sys.exit(f"{e}\nUse --no-pull to run on the repository as it is.")
+    try:
+        config.gentoo_repo = await repo.update(config, not args.no_pull)
+    except repo.CloneError as e:
+        sys.exit(f"Failed to clone {repo.URL}: {e}")
+    except RuntimeError as e:
+        sys.exit(f"{e}\nUse --no-pull to run on the repository as it is.")
 
     try:
         maintainers = load_maintainers(config.gentoo_repo)
@@ -139,7 +135,7 @@ async def async_main(args: argparse.Namespace) -> None:
     if args.maintainer:
         maintainer = maintainers.get(args.maintainer.lower())
         if maintainer is None:
-            sys.exit(f"{args.maintainer} maintains no packages in {repo}")
+            sys.exit(f"{args.maintainer} maintains no packages in {config.gentoo_repo}")
         selected = [maintainer]
     else:
         selected = list(maintainers.values())

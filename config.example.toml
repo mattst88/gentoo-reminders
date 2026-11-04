@@ -1,11 +1,13 @@
 [general]
-# Clone of the gentoo ebuild repository, which can be bare
-gentoo_repo = "/home/user/gentoo.git"
+# Clone of the gentoo ebuild repository, which can be bare. Without it, one
+# is made in cache_dir.
+#gentoo_repo = "/home/user/gentoo.git"
 
 # Where generated .eml files are written
 output_dir = "~/.local/share/gentoo-reminders/outbox"
 
-# Where the history of Gentoo's CI reports is kept between runs
+# Where the clone of gentoo.git and the history of Gentoo's CI reports are kept
+# between runs
 cache_dir = "~/.cache/gentoo-reminders"
 
 from_address = "noreply@gentoo.org"

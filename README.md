@@ -27,20 +27,18 @@ the emails say so in place of the pull requests.
 ## Requirements
 
 - Python 3.11 or later
-- a clone of gentoo.git
 - the [GitHub CLI](https://cli.github.com/), logged in, or a token in the
   file named by `secret_file` in the `[github]` section of the configuration
 - a [bugs.gentoo.org API key](https://bugs.gentoo.org/userprefs.cgi?tab=apikey),
   in the file named by `secret_file` in the `[bugzilla]` section of the
   configuration
 
-Only the `metadata.xml` files, `.mailmap` and the history of gentoo.git
-are read, so the repository can be a bare partial clone. It must have its
+gentoo.git is cloned into `cache_dir` on the first run and fetched on
+each run after. Only the `metadata.xml` files, `.mailmap` and the history
+are read, so the clone is a bare partial clone. To use a repository of
+your own instead, set `gentoo_repo`. It can be bare, but must have its
 history: a shallow clone gives wrong reports. Its `metadata.xml` files
 are read as committed in `HEAD`.
-
-    git clone --bare --filter=blob:none https://github.com/gentoo/gentoo.git
-    git -C gentoo.git config remote.origin.fetch 'refs/heads/*:refs/heads/*'
 
 ## Usage
 

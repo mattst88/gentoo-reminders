@@ -8,7 +8,8 @@ from pathlib import Path
 
 @dataclass
 class Config:
-    gentoo_repo: Path
+    # None for a clone in cache_dir that is kept up to date
+    gentoo_repo: Path | None = None
     output_dir: Path = Path("~/.local/share/gentoo-reminders/outbox")
     cache_dir: Path = Path("~/.cache/gentoo-reminders")
     from_address: str = "noreply@gentoo.org"
@@ -52,7 +53,8 @@ def load_config(path: str) -> Config:
         sys.exit(f"{path}: {e}")
 
     for key in ("gentoo_repo", "output_dir", "cache_dir"):
-        setattr(config, key, Path(getattr(config, key)).expanduser())
+        if (value := getattr(config, key)) is not None:
+            setattr(config, key, Path(value).expanduser())
 
     if config.github_repo.count("/") != 1:
         sys.exit(f"{path}: [github] repo is not owner/name: {config.github_repo}")
