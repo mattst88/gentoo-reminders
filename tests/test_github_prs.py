@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from gentoo_reminders.collectors import github_prs
-from gentoo_reminders.collectors.github_prs import GitHubPRsCollector, group_by_package
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
+from gentoodo.collectors import github_prs
+from gentoodo.collectors.github_prs import GitHubPRsCollector, group_by_package
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
 
 
 def test_group_by_package():

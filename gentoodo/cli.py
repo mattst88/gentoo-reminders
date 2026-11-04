@@ -59,7 +59,7 @@ def month(value: str) -> tuple[date, date]:
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        prog="gentoo-reminders",
+        prog="gentoodo",
         description="Generate reminder emails for Gentoo package maintainers",
     )
     parser.add_argument("--config", required=True,

@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from gentoo_reminders import repo
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import load_maintainers
+from gentoodo import repo
+from gentoodo.config import Config
+from gentoodo.maintainers import load_maintainers
 
 METADATA = "<pkgmetadata><maintainer><email>foo@gentoo.org</email></maintainer></pkgmetadata>"
 

@@ -3,10 +3,10 @@
 import asyncio
 from pathlib import Path
 
-from gentoo_reminders.collectors import stable_requests
-from gentoo_reminders.collectors.stable_requests import StableRequestsCollector
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
+from gentoodo.collectors import stable_requests
+from gentoodo.collectors.stable_requests import StableRequestsCollector
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
 
 
 def result(package, version, cls, msg):

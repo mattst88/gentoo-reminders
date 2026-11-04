@@ -3,10 +3,10 @@
 import asyncio
 from pathlib import Path
 
-from gentoo_reminders.collectors import redundant
-from gentoo_reminders.collectors.redundant import RedundantVersionsCollector
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
+from gentoodo.collectors import redundant
+from gentoodo.collectors.redundant import RedundantVersionsCollector
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
 
 
 def test_redundant_versions(monkeypatch):

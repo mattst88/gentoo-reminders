@@ -1,4 +1,4 @@
-# gentoo-reminders
+# gentoodo
 
 Writes a monthly reminder email for each Gentoo package maintainer,
 listing:
@@ -44,7 +44,7 @@ are read as committed in `HEAD`.
 
     pip install .
     cp config.example.toml config.toml
-    gentoo-reminders --config config.toml --dry-run --maintainer larry@gentoo.org
+    gentoodo --config config.toml --dry-run --maintainer larry@gentoo.org
 
 `--dry-run` prints the email instead of writing it to `output_dir`.
 Without `--maintainer`, every maintainer in the repository is processed.
@@ -70,7 +70,7 @@ earlier report.
 
 To send what was written, with the `sendmail` of the configuration:
 
-    gentoo-reminders --config config.toml --send-outbox
+    gentoodo --config config.toml --send-outbox
 
 Each email sent is moved to `sent` in `output_dir`. Those that fail stay
 behind, to be sent by the next `--send-outbox`. With `--dry-run`, it

@@ -2,7 +2,7 @@
 
 import pytest
 
-from gentoo_reminders.config import load_config
+from gentoodo.config import load_config
 
 
 def test_unknown_options(tmp_path):

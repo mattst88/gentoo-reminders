@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gentoo_reminders.collectors.qa import new_warnings
+from gentoodo.collectors.qa import new_warnings
 
 
 def result(cls, msg, version="5.42.2", package="perl", category="dev-lang"):

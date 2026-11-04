@@ -4,11 +4,11 @@
 #gentoo_repo = "/home/user/gentoo.git"
 
 # Where generated .eml files are written
-output_dir = "~/.local/share/gentoo-reminders/outbox"
+output_dir = "~/.local/share/gentoodo/outbox"
 
 # Where the clone of gentoo.git and the history of Gentoo's CI reports are kept
 # between runs
-cache_dir = "~/.cache/gentoo-reminders"
+cache_dir = "~/.cache/gentoodo"
 
 from_address = "noreply@gentoo.org"
 
@@ -28,9 +28,9 @@ sendmail = "/usr/sbin/sendmail"
 repo = "gentoo/gentoo"
 
 # File with a token for gh. Without it, gh uses its own login.
-#secret_file = "~/.config/gentoo-reminders/gh-token"
+#secret_file = "~/.config/gentoodo/gh-token"
 
 [bugzilla]
 # File with an API key, required by the bugs and new_bugs collectors. Without
 # one, Bugzilla hides the domains of email addresses.
-#secret_file = "~/.config/gentoo-reminders/bugzilla-api-key"
+#secret_file = "~/.config/gentoodo/bugzilla-api-key"

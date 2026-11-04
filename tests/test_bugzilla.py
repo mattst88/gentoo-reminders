@@ -10,11 +10,11 @@ from urllib.parse import parse_qs, urlsplit
 
 import pytest
 
-from gentoo_reminders.collectors import bugzilla
-from gentoo_reminders.collectors.bugzilla import BugsCollector, NewBugsCollector, by_assignee
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
-from gentoo_reminders.util import previous_month
+from gentoodo.collectors import bugzilla
+from gentoodo.collectors.bugzilla import BugsCollector, NewBugsCollector, by_assignee
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
+from gentoodo.util import previous_month
 
 
 def bug(bug_id, assignee, time, component="Current packages"):

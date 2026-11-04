@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gentoo_reminders.collectors.base import Item
-from gentoo_reminders.collectors.outdated import parse_feed
+from gentoodo.collectors.base import Item
+from gentoodo.collectors.outdated import parse_feed
 
 FEED = b"""<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">

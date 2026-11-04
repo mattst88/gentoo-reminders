@@ -7,11 +7,11 @@ from pathlib import Path
 
 import pytest
 
-from gentoo_reminders import __version__, cli
-from gentoo_reminders.cli import collector_names, month, parse_args, process
-from gentoo_reminders.collectors.base import Collector, Item, Section
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
+from gentoodo import __version__, cli
+from gentoodo.cli import collector_names, month, parse_args, process
+from gentoodo.collectors.base import Collector, Item, Section
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
 
 
 class FakeCollector(Collector):
@@ -81,4 +81,4 @@ def test_version(capsys):
     with pytest.raises(SystemExit) as e:
         parse_args(["--version"])
     assert e.value.code == 0
-    assert capsys.readouterr().out == f"gentoo-reminders {__version__}\n"
+    assert capsys.readouterr().out == f"gentoodo {__version__}\n"

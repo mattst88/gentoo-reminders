@@ -10,8 +10,8 @@ from pathlib import Path
 class Config:
     # None for a clone in cache_dir that is kept up to date
     gentoo_repo: Path | None = None
-    output_dir: Path = Path("~/.local/share/gentoo-reminders/outbox")
-    cache_dir: Path = Path("~/.cache/gentoo-reminders")
+    output_dir: Path = Path("~/.local/share/gentoodo/outbox")
+    cache_dir: Path = Path("~/.cache/gentoodo")
     from_address: str = "noreply@gentoo.org"
     cc: str | None = None
     subject_prefix: str = "[Gentoo Reminder]"

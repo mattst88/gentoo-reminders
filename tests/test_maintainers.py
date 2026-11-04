@@ -3,7 +3,7 @@
 import os
 import subprocess
 
-from gentoo_reminders.maintainers import Maintainer, find_last_commits, load_maintainers
+from gentoodo.maintainers import Maintainer, find_last_commits, load_maintainers
 
 METADATA = """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">

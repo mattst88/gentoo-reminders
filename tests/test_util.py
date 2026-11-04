@@ -4,8 +4,8 @@ import gzip
 import io
 from datetime import date
 
-from gentoo_reminders import util
-from gentoo_reminders.util import fetch, month_days, previous_month, redact
+from gentoodo import util
+from gentoodo.util import fetch, month_days, previous_month, redact
 
 
 def test_previous_month():

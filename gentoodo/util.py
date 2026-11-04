@@ -12,7 +12,7 @@ from urllib.request import Request, urlopen
 
 log = logging.getLogger(__name__)
 
-USER_AGENT = "gentoo-reminders"
+USER_AGENT = "gentoodo"
 
 
 async def run(*args: str, timeout: int = 300, env: dict[str, str] | None = None) -> str:

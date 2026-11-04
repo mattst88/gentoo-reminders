@@ -3,7 +3,7 @@
 import asyncio
 from datetime import UTC, datetime
 
-from gentoo_reminders import ci
+from gentoodo import ci
 
 
 def test_report_fetches_and_reads_once(monkeypatch, tmp_path):

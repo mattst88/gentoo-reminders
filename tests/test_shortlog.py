@@ -4,11 +4,11 @@ import asyncio
 from datetime import UTC, date, datetime
 from pathlib import Path
 
-from gentoo_reminders.collectors import shortlog
-from gentoo_reminders.collectors.shortlog import ShortlogCollector, parse_projects
-from gentoo_reminders.config import Config
-from gentoo_reminders.maintainers import Maintainer
-from gentoo_reminders.util import previous_month
+from gentoodo.collectors import shortlog
+from gentoodo.collectors.shortlog import ShortlogCollector, parse_projects
+from gentoodo.config import Config
+from gentoodo.maintainers import Maintainer
+from gentoodo.util import previous_month
 
 PROJECTS = b"""<?xml version="1.0" encoding="UTF-8"?>
 <projects>
