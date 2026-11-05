@@ -6,6 +6,7 @@ import gzip
 import logging
 import re
 import time
+from collections.abc import Mapping
 from datetime import UTC, date, datetime, timedelta
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -54,17 +55,22 @@ def redact(url: str) -> str:
     return re.sub(r"(api_key=)[^&]*", r"\1REDACTED", url, flags=re.IGNORECASE)
 
 
-def _get(url: str) -> bytes:
+def _get(url: str) -> tuple[bytes, Mapping[str, str]]:
     request = Request(url, headers={"User-Agent": USER_AGENT, "Accept-Encoding": "gzip"})
     with urlopen(request, timeout=120) as response:
         data = response.read()
         if response.headers.get("Content-Encoding") == "gzip":
             data = gzip.decompress(data)
-        return data
+        return data, response.headers
 
 
 def fetch(url: str) -> bytes:
     """GET a URL, retrying server and connection errors."""
+    return fetch_with_headers(url)[0]
+
+
+def fetch_with_headers(url: str) -> tuple[bytes, Mapping[str, str]]:
+    """GET a URL like `fetch()`, also returning the response headers."""
     for delay in (1, 4):
         try:
             return _get(url)

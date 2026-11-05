@@ -5,7 +5,7 @@ import io
 from datetime import date
 
 from gentoodo import util
-from gentoodo.util import fetch, month_days, previous_month, redact
+from gentoodo.util import fetch, fetch_with_headers, month_days, previous_month, redact
 
 
 def test_previous_month():
@@ -45,3 +45,10 @@ def test_fetch_decompresses(monkeypatch):
 
     monkeypatch.setattr(util, "urlopen", lambda request, timeout: Response(b"data", {}))
     assert fetch("https://example.org/") == b"data"
+
+
+def test_fetch_with_headers(monkeypatch):
+    headers = {"Content-Encoding": "gzip", "Link": '<https://example.org/2>; rel="next"'}
+    monkeypatch.setattr(util, "urlopen",
+                        lambda request, timeout: Response(gzip.compress(b"data"), headers))
+    assert fetch_with_headers("https://example.org/") == (b"data", headers)
