@@ -7,30 +7,9 @@ from pathlib import Path
 import pytest
 
 from gentoodo.collectors import github_prs
-from gentoodo.collectors.github_prs import GitHubPRsCollector, group_by_package
+from gentoodo.collectors.github_prs import GitHubPRsCollector
 from gentoodo.config import Config
 from gentoodo.maintainers import Maintainer
-
-
-def test_group_by_package():
-    prs = [
-        {"number": 2, "title": "Bump both", "url": "https://example.org/2", "files": {"nodes": [
-            {"path": "x11-libs/libdrm/libdrm-2.ebuild"},
-            {"path": "x11-libs/libdrm/Manifest"},
-            {"path": "media-libs/mesa/mesa-2.ebuild"},
-        ]}},
-        {"number": 1, "title": "New eclass", "url": "https://example.org/1", "files": {"nodes": [
-            {"path": "eclass/foo.eclass"},
-            {"path": "media-libs/mesa/files/foo.patch"},
-        ]}},
-    ]
-
-    grouped = group_by_package(prs)
-
-    assert set(grouped) == {"x11-libs/libdrm", "media-libs/mesa"}
-    assert [item.ref for item in grouped["x11-libs/libdrm"]] == ["PR #2"]
-    mesa = {item.ref: item.url for item in grouped["media-libs/mesa"]}
-    assert mesa == {"PR #1": "https://example.org/1", "PR #2": "https://example.org/2"}
 
 
 def page(prs=(), cursor=None):

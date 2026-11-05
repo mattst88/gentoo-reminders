@@ -5,11 +5,9 @@ import json
 import logging
 import os
 import re
-from collections import defaultdict
 
-from .base import Item, PackageCollector, Section
-from ..maintainers import Maintainer
 from ..util import run
+from .pull_requests import PullRequest, PullRequestsCollector
 
 log = logging.getLogger(__name__)
 
@@ -41,46 +39,11 @@ async def request(*args: str, env: dict[str, str] | None) -> str:
     return await run(*args, env=env)
 
 
-def number(item: Item) -> int:
-    return int(item.ref.removeprefix("PR #"))
-
-
-def group_by_package(prs: list[dict]) -> dict[str, list[Item]]:
-    """Map each package to the pull requests that touch its files."""
-    grouped: dict[str, list[Item]] = defaultdict(list)
-    for pr in prs:
-        item = Item(f"PR #{pr['number']}", f": {pr['title']}", pr["url"])
-        packages = {
-            "/".join(parts[:2])
-            for f in pr["files"]["nodes"]
-            if len(parts := f["path"].split("/")) >= 3
-        }
-        for package in packages:
-            grouped[package].append(item)
-    return grouped
-
-
-class GitHubPRsCollector(PackageCollector):
+class GitHubPRsCollector(PullRequestsCollector):
     title = "Open GitHub Pull Requests"
-    urls_in_text = True
-    items: dict[str, list[Item]] | None  # None if GitHub could not be read
+    forge = "GitHub"
 
-    async def setup(self) -> None:
-        try:
-            self.items = group_by_package(await self.fetch())
-        except Exception as e:
-            log.warning("Failed to fetch pull requests: %s", e)
-            self.items = None
-
-    async def collect(self, maintainer: Maintainer) -> list[Section]:
-        if self.items is None:
-            return [Section(self.title, text="Could not be fetched from GitHub.", notice=True)]
-        sections = await super().collect(maintainer)
-        for section in sections:
-            section.items.sort(key=number)
-        return sections
-
-    async def fetch(self) -> list[dict]:
+    async def fetch(self) -> list[PullRequest]:
         owner, name = self.config.github_repo.split("/")
         args = ("gh", "api", "graphql", "-f", f"query={QUERY}",
                 "-f", f"owner={owner}", "-f", f"name={name}")
@@ -92,7 +55,11 @@ class GitHubPRsCollector(PackageCollector):
         while True:
             out = await request(*args, *after, env=env)
             page = json.loads(out)["data"]["repository"]["pullRequests"]
-            prs += page["nodes"]
+            prs += [
+                PullRequest(pr["number"], pr["title"], pr["url"],
+                            [f["path"] for f in pr["files"]["nodes"]])
+                for pr in page["nodes"]
+            ]
             if not page["pageInfo"]["hasNextPage"]:
                 return prs
             after = ("-f", f"cursor={page['pageInfo']['endCursor']}")
